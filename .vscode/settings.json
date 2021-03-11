@@ -1,0 +1,6 @@
+{
+    "python.autoComplete.extraPaths": [
+        "Note"
+    ],
+    "python.pythonPath": "d:\\School\\AP Project\\Note\\env\\Scripts\\python.exe",
+}
