@@ -1,5 +1,5 @@
 import sys
-from Note.database import get_database
+from Note.database import NoteDatabase, get_database
 from Note.table import Note
 
 
@@ -7,8 +7,7 @@ def main(argv) -> int:
     note = Note(content=Note.file_to_binary("test.txt"))
 
     with get_database() as database:
-
-        for note in database.get_note_by_id(1):
+        for note in database.get_all_notes(order=NoteDatabase.ORDER_BY_DATE):
             print(note)
 
 

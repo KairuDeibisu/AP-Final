@@ -1,3 +1,4 @@
+from os import stat
 from typing import Generator
 from Note import DEFAULT_CONFIGURATION_PATH
 from Note.table import Note
@@ -28,50 +29,63 @@ DATABASE_NAME = "notes"
 
 class Database:
 
-    def __init__(self, user, passwd, host, database=None) -> None:
-
+    def __init__(self, user, password, host, database=None) -> None:
         self._db = mysql.connector.connect(
-            user=user, passwd=passwd, host=host, database=database)
-
+            user=user, passwd=password, host=host, database=database)
         self._cursor = self._db.cursor()
 
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback):
-        self._db.close()
+    def __exit__(self, exc_type, exc_value, traceback):
+
+        if exc_type != 0:
+            self._db.close()
+            return False
+
         return True
+
+    def execute(self, query, args: tuple = None):
+        self._cursor.execute(query, args)
 
     def commit(self):
         self._db.commit()
 
 
 class NoteDatabase(Database):
+    
+    ORDER_BY_DATE = "ORDER BY date_created"
 
     def insert_note(self, note) -> int:
         """
         Insert a note into the database
         """
-        content = note.get_content()
-
-        self._cursor.execute(
-            f"INSERT INTO note (content) VALUES ('{content}')", )
+        self.execute(
+            f"INSERT INTO note (content) VALUES (%s)",
+            (note.get_content(),))
         self.commit()
         return self._cursor.lastrowid
 
-    def get_notes(self) -> list:
+    def get_all_notes(self, order=None) -> list[Note]:
         """
         Return a list of all notes
         """
-        self._cursor.execute("SELECT * FROM note")
+        query = "SELECT * FROM note"
+
+        if order != None:
+            query += " " + order
+
+        query += ";"
+
+        self.execute(query)
         return self._note_generator()
 
-    def get_note_by_id(self, note_id) -> list:
+    def get_note_by_id(self, note_id: int) -> Note:
         """
         Return a note with given id 
         """
-        self._cursor.execute(f"SELECT * FROM note WHERE note_id = {note_id}")
-        return self._note_generator()
+        self.execute("SELECT * FROM note WHERE note_id = %s;", (note_id,))
+        return next(self._note_generator())
 
     def _note_generator(self) -> Generator:
         """
@@ -84,37 +98,46 @@ class NoteDatabase(Database):
         """
         Convert note from sql qurey into python object
         """
-        return Note(note[0], note[1], note[2], note[3])
+        return Note(note[0], note[1], note[2], bool(note[3]))
 
     @staticmethod
     def build_tables(database):
         """
         Create database tables 
         """
-        database._cursor.execute(NOTES_TABLE)
-        database._cursor.execute(TAGS_TABLE)
-        database.commit()
+        database.execute(NOTES_TABLE)
+        database.execute(TAGS_TABLE)
 
     @staticmethod
     def initialize_database(database):
         """
-        Sets up MySQL database and return it
+        Sets up MySQL database
         """
         try:
-            database._cursor.execute(
+            database.execute(
                 f"CREATE DATABASE IF NOT EXISTS {DATABASE_NAME} DEFAULT CHARACTER SET 'utf8';")
+            database.commit()
         except mysql.connector.Error as err:
             print("Could not create database %s", err)
             exit(1)
-        database._cursor.execute(f"USE {DATABASE_NAME};")
-        database.commit
-        NoteDatabase.build_tables(database)
+
+        NoteDatabase.initialize_tables(database)
+
         return database
 
     @staticmethod
-    def load_database_configuration(path) -> dict:
+    def initialize_tables(database):
         """
-        Load configuration
+        Set up MYSQL tables
+        """
+        database.execute(f"USE {DATABASE_NAME};")
+        NoteDatabase.build_tables(database)
+        database.commit()
+
+    @staticmethod
+    def database_configuration(path: str) -> dict:
+        """
+        Load configuration from file
         """
         with open(path, "r") as f:
             data = json.load(f)
@@ -126,6 +149,6 @@ def get_database():
     """
     Get configured note database
     """
-    auth = NoteDatabase.load_database_configuration(
+    auth = NoteDatabase.database_configuration(
         DEFAULT_CONFIGURATION_PATH)
     return NoteDatabase.initialize_database(NoteDatabase(auth["user"], auth["password"], auth["host"]))

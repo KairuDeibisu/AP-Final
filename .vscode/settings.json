@@ -3,4 +3,7 @@
         "Note"
     ],
     "python.pythonPath": "d:\\School\\AP Project\\Note\\env\\Scripts\\python.exe",
+    "python.analysis.extraPaths": [
+        "Note"
+    ],
 }
