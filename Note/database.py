@@ -1,5 +1,14 @@
+"""
+database.py
+
+Database objects
+
+"""
+
 from os import stat
 from typing import Generator
+
+from mysql.connector import cursor
 from Note import DEFAULT_CONFIGURATION_PATH
 from Note.table import Note
 import mysql.connector
@@ -33,7 +42,7 @@ class Database:
     Base class for database.
     """
 
-    def __init__(self, user, password, host, database=None) -> None:
+    def __init__(self, user: str, password: str, host: str, database: str = None) -> None:
         self.connect(user, password, host, database)
         self._cursor = self._db.cursor()
 
@@ -52,25 +61,44 @@ class Database:
         self._cursor.execute(query, args)
 
     def commit(self):
+        """
+        Commit changes to the database
+        """
         self._db.commit()
 
-    def connect(self, user, password, host, database=None):
+    def connect(self, user: str, password: str, host: str, database: str = None):
+        """
+        Connect to database
+
+        :param user: database username
+        :param password: database password
+        :param host: database ip
+        :param database: select what database to use
+
+        """
         self._db = mysql.connector.connect(
             user=user, passwd=password, host=host, database=database)
 
-    def cursor(self):
+    def cursor(self) -> cursor:
+        """
+        :returns: a cursor object that's conected to the database
+        """
         return self._cursor
 
 
 class NoteDatabase(Database):
 
+    """
+    NoteDatabase hanldes the database operations
+
+    """
     ORDER_BY_DATE = "ORDER BY date_created"
 
     def insert_note(self, note) -> int:
         """
         Insert a note into the database
 
-        returns note id
+        :returns: a note id
         """
         self.execute(
             f"INSERT INTO note (content) VALUES (%s)",
@@ -80,7 +108,7 @@ class NoteDatabase(Database):
 
     def get_all_notes(self, order=None) -> list[Note]:
         """
-        Return a list of all notes
+        :returns: a list of all notes
         """
         query = "SELECT * FROM note"
 
@@ -94,14 +122,14 @@ class NoteDatabase(Database):
 
     def get_note_by_id(self, note_id: int) -> Note:
         """
-        Return a note with given id 
+        :returns: a note with given id 
         """
         self.execute("SELECT * FROM note WHERE note_id = %s;", (note_id,))
         return next(self._note_generator())
 
     def _note_generator(self) -> Generator:
         """
-        Return a generator of notes from the current qurey
+        :returns: a generator of notes from the current qurey
         """
         for note in self.cursor():
             yield self._convert_note(note)
@@ -109,6 +137,8 @@ class NoteDatabase(Database):
     def _convert_note(self, note: tuple):
         """
         Convert note from sql qurey into python object
+
+        :returns: a note object
         """
         return Note(note[0], note[1], note[2], note[3])
 
@@ -160,6 +190,8 @@ class NoteDatabase(Database):
     def get_database():
         """
         Get configured note database
+
+        :returns: a NoteDatabase
         """
         auth = NoteDatabase._database_configuration(
             DEFAULT_CONFIGURATION_PATH)

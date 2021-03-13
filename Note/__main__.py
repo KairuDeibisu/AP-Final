@@ -1,3 +1,8 @@
+
+"""
+__main__.py
+"""
+
 from Note import cli
 
 import sys

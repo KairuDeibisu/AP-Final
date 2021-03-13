@@ -6,4 +6,5 @@
     "python.analysis.extraPaths": [
         "Note"
     ],
+    "restructuredtext.confPath": "${workspaceFolder}\\docs",
 }

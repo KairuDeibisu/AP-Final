@@ -1,11 +1,12 @@
 
+"""
+table.py
+
+Database table objects
+
+"""
 
 from datetime import date
-
-
-class Table:
-    pass
-
 
 class Note:
     def __init__(self,
