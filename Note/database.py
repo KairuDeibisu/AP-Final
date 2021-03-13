@@ -115,11 +115,11 @@ class Database:
 
 
 class IDatabase:
-    """
 
+    """
     Database interface for database operations.
-
     """
+
     @abc.abstractmethod
     def insert_note(self, table: Note):
         """
@@ -135,7 +135,7 @@ class IDatabase:
         """
         Update a note entry in the database.
 
-        :param table: table to update
+        :param table: object to update the database
         """
         pass
 
@@ -189,7 +189,7 @@ class NoteDatabase(Database, IDatabase):
     """
     ORDER_BY_DATE = "ORDER BY date_created"
 
-    def insert_note(self, table):
+    def insert_note(self, table) -> int:
 
         query = "INSERT INTO note (content) VALUES(%s);"
         args = (table.get_content(),)
@@ -207,7 +207,7 @@ class NoteDatabase(Database, IDatabase):
         self.execute(query, args)
         self.commit()
 
-    def read_note(self, table):
+    def read_note(self, table) -> Note:
 
         query = "SELECT * from note WHERE note_id = %s;"
         args = (table.get_id(),)
@@ -224,7 +224,7 @@ class NoteDatabase(Database, IDatabase):
         self.execute(query, args)
         self.commit()
 
-    def read_all_notes(self, order=None):
+    def read_all_notes(self, order=None) -> list[Note]:
 
         query = "SELECT * FROM note"
 
@@ -239,6 +239,9 @@ class NoteDatabase(Database, IDatabase):
 
     def _note_generator(self) -> Generator:
         """
+
+        Genearate notes from current query
+
         :returns: a generator of notes from the current qurey
         """
         for note in self.cursor():
@@ -246,7 +249,7 @@ class NoteDatabase(Database, IDatabase):
 
     def _convert_note(self, note: tuple) -> Note:
         """
-        Convert note from sql query into python object
+        Convert note from sql query into python Note object
 
         :returns: a note object
         """
