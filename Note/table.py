@@ -11,9 +11,7 @@ from datetime import date
 
 class Note:
     """
-
-    Note class stores database about note
-
+    Note class stores data about note
     """
 
     def __init__(self,
@@ -63,17 +61,29 @@ class Note:
             raise Exception(f"not in hex format: {err}") from None
 
     def get_id(self) -> int:
-        """
-        :returns: unique note id
-        """
         return self.note_id
 
+    def set_id(self, table_id):
+        self.note_id = table_id
+
+    def get_active(self):
+        return self.active
+
+    def set_active(self, active):
+        self.active = int(active)
+
+    def set_content(self, content):
+        self.content = content
+
     def get_content(self) -> str:
-        """
-        :returns: the contents of a note
-        """
 
         return self.content
+
+    def get_date(self):
+        return self.date
+
+    def set_date(self, date):
+        self.date = date
 
 
 class Tag:

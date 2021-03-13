@@ -5,15 +5,13 @@ Database objects
 
 """
 
-from os import stat
 from typing import Generator
-
 from mysql.connector import cursor
 from Note import DEFAULT_CONFIGURATION_PATH
 from Note.table import Note
 import mysql.connector
 import json
-
+import abc
 
 NOTES_TABLE = """
 CREATE TABLE IF NOT EXISTS note(
@@ -42,16 +40,23 @@ class Database:
     Base class for database.
     """
 
-    def __init__(self, user: str, password: str, host: str, database: str = None) -> None:
+    def __init__(self,
+                 user: str,
+                 password: str,
+                 host: str,
+                 database: str = None) -> None:
         """
         :param user: database username
         :param password: database password
         :param host: database ip
         :param database: select what database to use
-
         """
-        self._connect(user, password, host, database)
-        self._cursor = self._db.cursor(buffered=True)
+        self._user = user
+        self._password = password
+        self._host = host
+        self._database = database
+
+        self._connect()
 
     def __enter__(self):
         return self
@@ -65,6 +70,13 @@ class Database:
         return True
 
     def execute(self, query, args: tuple = None):
+        """
+        Execute query to the database.
+
+        :param query: MYSQL query
+        :param args: query arguments
+
+        """
         self.cursor().execute(query, args)
 
     def commit(self):
@@ -73,16 +85,23 @@ class Database:
         """
         self._db.commit()
 
-    def _connect(self, user: str, password: str, host: str, database: str = None):
-        self._db = mysql.connector.connect(
-            user=user, passwd=password, host=host, database=database)
-        self._db.autocommit = False
-
     def cursor(self) -> cursor:
         """
-        :returns: a cursor object that's conected to the database
+        :returns: a cursor object that's conected to the database. Holds the output of execute. 
         """
         return self._cursor
+
+    def _connect(self):
+        self._db = mysql.connector.connect(
+            user=self._user,
+            passwd=self._password,
+            host=self._host,
+            database=self._database)
+
+        del self._password
+
+        self._db.autocommit = False
+        self._cursor = self._db.cursor(buffered=True)
 
     @staticmethod
     def _database_configuration(path: str) -> dict:
@@ -95,60 +114,128 @@ class Database:
         return data
 
 
-class NoteDatabase(Database):
+class IDatabase:
+    """
+
+    Database interface for database operations.
+
+    """
+    @abc.abstractmethod
+    def insert_note(self, table: Note):
+        """
+        Insert a note object into the database.
+
+        :param table: object to insert into database
+        :returns: note_id
+        """
+        pass
+
+    @abc.abstractmethod
+    def update_note(self, table: Note):
+        """
+        Update a note entry in the database.
+
+        :param table: table to update
+        """
+        pass
+
+    @abc.abstractmethod
+    def read_note(self, table: Note) -> Note:
+        """
+
+        Get note entry from database.
+
+        :param table: note object with id to retrieve 
+        :returns: a note object from the table
+        """
+        pass
+
+    @abc.abstractmethod
+    def delete_note(self, table):
+        """
+        Delete note from database.
+
+        :param table: note object with id to delete.
+        """
+        pass
+
+    @abc.abstractmethod
+    def read_all_notes(self, order=None) -> list[Note]:
+        """
+
+        Get list of all notes
+
+        :type order: class attribute
+        :param order: SQL statment to order by
+
+        :returns: a list of all entrys in the table
+        """
+        pass
+
+    @abc.abstractstaticmethod
+    def get_database(self) -> Database:
+        """
+        Get configured note database
+
+        :returns: a database
+        """
+        pass
+
+
+class NoteDatabase(Database, IDatabase):
 
     """
     NoteDatabase handles the database operations
-
     """
     ORDER_BY_DATE = "ORDER BY date_created"
 
-    def insert_note(self, note) -> int:
-        """
-        Insert a note into the database
+    def insert_note(self, table):
 
-        :returns: a note id
-        """
-        self.execute(
-            f"INSERT INTO note (content) VALUES (%s)",
-            (note.get_content(),))
+        query = "INSERT INTO note (content) VALUES(%s);"
+        args = (table.get_content(),)
+
+        self.execute(query, args)
         self.commit()
+
         return self.cursor().lastrowid
 
-    def delete_note(self, note_id: int):
-        """
-        Delete from database
+    def update_note(self, table):
 
-        :param note_id: unique id of note
-        """
+        query = "UPDATE note SET content = %s, active = %s WHERE note_id = %s;"
+        args = (table.get_content(), table.get_active(), table.get_id())
 
-        self.execute("DELETE FROM note WHERE note_id = %s;", (note_id,))
-
+        self.execute(query, args)
         self.commit()
 
-    def get_all_notes(self, order=None) -> list[Note]:
-        """
-        :type order: class attribute
-        :param order: attribute to order by
+    def read_note(self, table):
 
-        :returns: a list of all notes
-        """
+        query = "SELECT * from note WHERE note_id = %s;"
+        args = (table.get_id(),)
+
+        self.execute(query, args)
+
+        return next(self._note_generator(), None)
+
+    def delete_note(self, table):
+
+        query = "DELETE FROM note WHERE note_id = %s;"
+        args = (table.get_id(),)
+
+        self.execute(query, args)
+        self.commit()
+
+    def read_all_notes(self, order=None):
+
         query = "SELECT * FROM note"
 
         if order != None:
-            query += " " + order
+            query += order
 
         query += ";"
 
         self.execute(query)
-        return self._note_generator()
 
-    def get_note_by_id(self, note_id: int) -> Note:
-        """
-        :returns: a note with given id 
-        """
-        self.execute("SELECT * FROM note WHERE note_id = %s;", (note_id,))
-        return next(self._note_generator(), None)
+        return self._note_generator()
 
     def _note_generator(self) -> Generator:
         """
@@ -157,18 +244,24 @@ class NoteDatabase(Database):
         for note in self.cursor():
             yield self._convert_note(note)
 
-    def _convert_note(self, note: tuple):
+    def _convert_note(self, note: tuple) -> Note:
         """
-        Convert note from sql qurey into python object
+        Convert note from sql query into python object
 
         :returns: a note object
         """
-        return Note(note[0], note[1], note[2], note[3])
+
+        return Note(note_id=note[0],
+                    content=note[1],
+                    date=note[2],
+                    active=note[3])
 
     @staticmethod
     def _build_tables(database: Database):
         """
-        Create database tables 
+        Create database tables
+
+        :param database: connected database
         """
         database.execute(NOTES_TABLE)
         database.execute(TAGS_TABLE)
@@ -177,14 +270,17 @@ class NoteDatabase(Database):
     def _initialize_database(database: Database):
         """
         Sets up MySQL database
+
+        :param database: connected database
         """
+
+        query = f"CREATE DATABASE IF NOT EXISTS {DATABASE_NAME} DEFAULT CHARACTER SET 'utf8';"
+
         try:
-            database.execute(
-                f"CREATE DATABASE IF NOT EXISTS {DATABASE_NAME} DEFAULT CHARACTER SET 'utf8';")
+            database.execute(query)
             database.commit()
         except mysql.connector.Error as err:
-            print("Could not create database %s", err)
-            exit(1)
+            raise Exception(f"Could not create database: {err}") from None
 
         NoteDatabase._initialize_tables(database)
 
@@ -194,18 +290,21 @@ class NoteDatabase(Database):
     def _initialize_tables(database: Database):
         """
         Set up MYSQL tables
+
+        :param database: connected database
         """
-        database.execute(f"USE {DATABASE_NAME};")
+
+        query = f"USE {DATABASE_NAME};"
+
+        database.execute(query)
         NoteDatabase._build_tables(database)
+
         database.commit()
 
     @staticmethod
     def get_database():
-        """
-        Get configured note database
 
-        :returns: a NoteDatabase
-        """
-        auth = Database._database_configuration(
-            DEFAULT_CONFIGURATION_PATH)
-        return NoteDatabase._initialize_database(NoteDatabase(auth["user"], auth["password"], auth["host"]))
+        auth = Database._database_configuration(DEFAULT_CONFIGURATION_PATH)
+        db = NoteDatabase(auth["user"], auth["password"], auth["host"])
+
+        return NoteDatabase._initialize_database(db)

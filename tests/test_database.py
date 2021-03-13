@@ -1,7 +1,7 @@
 from tests import DEFAULT_TEST_FILE_PATH
-import unittest
 from Note.database import NoteDatabase
 from Note.table import Note
+import unittest
 
 
 class TestNoteDatabase(unittest.TestCase):
@@ -18,24 +18,26 @@ class TestNoteDatabase(unittest.TestCase):
 
         self.assertEqual(type(note_id), int)
 
-    def test_get_all_notes(self):
+    def test_read_all_notes(self):
         """
         list of note objects are returned
         """
 
-        notes = self.db.get_all_notes()
+        notes = self.db.read_all_notes()
 
         for note in notes:
             self.assertIsInstance(note, Note)
 
-    def test_search_by_id(self):
+    def test_read_note(self):
         """
         note is returned with id
         """
 
         note_id = 1
 
-        note = self.db.get_note_by_id(note_id)
+        note = Note(note_id=note_id)
+
+        note = self.db.read_note(note)
 
         message = f"{note_id} != {note}"
 
@@ -45,17 +47,15 @@ class TestNoteDatabase(unittest.TestCase):
         """
         Delete note from database
         """
-        notes = list(self.get_all_notes())
+
+        notes = list(self.db.read_all_notes())
 
         if len(notes) <= 0:
             self.skipTest("No notes to delete")
 
-        note = notes[-1].get_id()
+        note = notes[-1]
         self.db.delete_note(note)
-        self.assertEqual(self.db.get_note_by_id(note), None)
-
-    def get_all_notes(self):
-        return self.db.get_all_notes()
+        self.assertEqual(self.db.read_note(note), None)
 
     def get_test_note_object(self):
         return Note(content=Note.file_to_binary(DEFAULT_TEST_FILE_PATH))
