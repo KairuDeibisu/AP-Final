@@ -50,6 +50,9 @@ class Note:
             print("Error: Database Might be corrupt")
             exit(1)
 
+    def get_id(self):
+        return self.note_id
+
     def get_content(self) -> dict:
 
         return self.content
