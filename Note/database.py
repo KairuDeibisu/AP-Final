@@ -29,9 +29,12 @@ DATABASE_NAME = "notes"
 
 class Database:
 
+    """
+    Base class for database.
+    """
+
     def __init__(self, user, password, host, database=None) -> None:
-        self._db = mysql.connector.connect(
-            user=user, passwd=password, host=host, database=database)
+        self.connect(user, password, host, database)
         self._cursor = self._db.cursor()
 
     def __enter__(self):
@@ -51,9 +54,16 @@ class Database:
     def commit(self):
         self._db.commit()
 
+    def connect(self, user, password, host, database=None):
+        self._db = mysql.connector.connect(
+            user=user, passwd=password, host=host, database=database)
+
+    def cursor(self):
+        return self._cursor
+
 
 class NoteDatabase(Database):
-    
+
     ORDER_BY_DATE = "ORDER BY date_created"
 
     def insert_note(self, note) -> int:
@@ -64,7 +74,7 @@ class NoteDatabase(Database):
             f"INSERT INTO note (content) VALUES (%s)",
             (note.get_content(),))
         self.commit()
-        return self._cursor.lastrowid
+        return self.cursor().lastrowid
 
     def get_all_notes(self, order=None) -> list[Note]:
         """
@@ -91,7 +101,7 @@ class NoteDatabase(Database):
         """
         Return a generator of notes from the current qurey
         """
-        for note in self._cursor:
+        for note in self.cursor():
             yield self._convert_note(note)
 
     def _convert_note(self, note: tuple):
@@ -101,7 +111,7 @@ class NoteDatabase(Database):
         return Note(note[0], note[1], note[2], bool(note[3]))
 
     @staticmethod
-    def build_tables(database):
+    def _build_tables(database):
         """
         Create database tables 
         """
@@ -109,7 +119,7 @@ class NoteDatabase(Database):
         database.execute(TAGS_TABLE)
 
     @staticmethod
-    def initialize_database(database):
+    def _initialize_database(database):
         """
         Sets up MySQL database
         """
@@ -126,7 +136,7 @@ class NoteDatabase(Database):
         return database
 
     @staticmethod
-    def initialize_tables(database):
+    def _initialize_tables(database):
         """
         Set up MYSQL tables
         """
@@ -135,7 +145,7 @@ class NoteDatabase(Database):
         database.commit()
 
     @staticmethod
-    def database_configuration(path: str) -> dict:
+    def _database_configuration(path: str) -> dict:
         """
         Load configuration from file
         """
@@ -144,11 +154,11 @@ class NoteDatabase(Database):
 
         return data
 
-
-def get_database():
-    """
-    Get configured note database
-    """
-    auth = NoteDatabase.database_configuration(
-        DEFAULT_CONFIGURATION_PATH)
-    return NoteDatabase.initialize_database(NoteDatabase(auth["user"], auth["password"], auth["host"]))
+    @staticmethod
+    def get_database():
+        """
+        Get configured note database
+        """
+        auth = NoteDatabase._database_configuration(
+            DEFAULT_CONFIGURATION_PATH)
+        return NoteDatabase._initialize_database(NoteDatabase(auth["user"], auth["password"], auth["host"]))
