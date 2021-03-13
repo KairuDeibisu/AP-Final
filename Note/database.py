@@ -69,6 +69,8 @@ class NoteDatabase(Database):
     def insert_note(self, note) -> int:
         """
         Insert a note into the database
+
+        returns note id
         """
         self.execute(
             f"INSERT INTO note (content) VALUES (%s)",
@@ -108,7 +110,7 @@ class NoteDatabase(Database):
         """
         Convert note from sql qurey into python object
         """
-        return Note(note[0], note[1], note[2], bool(note[3]))
+        return Note(note[0], note[1], note[2], note[3])
 
     @staticmethod
     def _build_tables(database):
@@ -131,7 +133,7 @@ class NoteDatabase(Database):
             print("Could not create database %s", err)
             exit(1)
 
-        NoteDatabase.initialize_tables(database)
+        NoteDatabase._initialize_tables(database)
 
         return database
 
@@ -141,7 +143,7 @@ class NoteDatabase(Database):
         Set up MYSQL tables
         """
         database.execute(f"USE {DATABASE_NAME};")
-        NoteDatabase.build_tables(database)
+        NoteDatabase._build_tables(database)
         database.commit()
 
     @staticmethod
