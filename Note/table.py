@@ -8,7 +8,14 @@ Database table objects
 
 from datetime import date
 
+
 class Note:
+    """
+
+    Note class stores database about note
+
+    """
+
     def __init__(self,
                  note_id: int = None,
                  content: bytes = None,
@@ -30,9 +37,12 @@ class Note:
         return str((self.note_id, self.content, self.date, self.active))
 
     @staticmethod
-    def file_to_binary(filename):
+    def file_to_binary(filename: str) -> bytes:
         """
-        Convert text file to binary blob
+        Convert text file to binary data
+
+        :returns: contents
+
         """
         with open(filename, "rb") as f:
             data = f.read()
@@ -46,14 +56,22 @@ class Note:
         """
         try:
             return bytes.fromhex(b_string.decode()).decode('utf-8')
-        except UnicodeDecodeError:
-            print("Error: Database Might be corrupt")
-            exit(1)
+        except UnicodeDecodeError as err:
+            raise Exception(
+                f"Database Might be corrupt: {err}") from None
+        except ValueError as err:
+            raise Exception(f"not in hex format: {err}") from None
 
-    def get_id(self):
+    def get_id(self) -> int:
+        """
+        :returns: unique note id
+        """
         return self.note_id
 
-    def get_content(self) -> dict:
+    def get_content(self) -> str:
+        """
+        :returns: the contents of a note
+        """
 
         return self.content
 

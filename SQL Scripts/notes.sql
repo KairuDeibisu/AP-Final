@@ -17,8 +17,11 @@ CREATE TABLE IF NOT EXISTS note(
 	active BOOL NOT NULL DEFAULT true
 );
 
+ALTER TABLE tag ENGINE=INNODB;
 
 SELECT note_id FROM note;
+
+ROLLBACK WORK;
 
 CREATE TABLE IF NOT EXISTS tag(
 	fk_note_id INT,
@@ -29,11 +32,15 @@ CREATE TABLE IF NOT EXISTS tag(
 
 DROP TABLE tag;
 
+DELETE FROM note WHERE note_id = 49;
+
 INSERT INTO note(date_created) VALUES(CURDATE());
 
 INSERT INTO tag VALUES(2, "CS");
 
 SELECT fk_note_id FROM tag;
+
+DELETE FROM note WHERE note_id > 4;
 
 SELECT 
 	note.note_id FROM note
