@@ -1,7 +1,7 @@
+import unittest
 from tests import DEFAULT_TEST_FILE_PATH
 from Note.database import NoteDatabase
 from Note.table import Note
-import unittest
 
 
 class TestNoteDatabase(unittest.TestCase):

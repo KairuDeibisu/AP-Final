@@ -5,13 +5,13 @@ Database objects
 
 """
 
+import json
+import abc
 from typing import Generator
-from mysql.connector import cursor
 from Note import DEFAULT_CONFIGURATION_PATH
 from Note.table import Note
 import mysql.connector
-import json
-import abc
+from mysql.connector import cursor
 
 NOTES_TABLE = """
 CREATE TABLE IF NOT EXISTS note(
@@ -67,6 +67,7 @@ class Database:
             self._db.close()
             return False
 
+        self._db.close()
         return True
 
     def execute(self, query, args: tuple = None):
@@ -108,6 +109,7 @@ class Database:
         """
         Load configuration from file
         """
+
         with open(path, "r") as f:
             data = json.load(f)
 
@@ -208,7 +210,6 @@ class NoteDatabase(Database, IDatabase):
         self.commit()
 
     def read_note(self, table) -> Note:
-
         query = "SELECT * from note WHERE note_id = %s;"
         args = (table.get_id(),)
 

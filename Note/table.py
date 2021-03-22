@@ -64,6 +64,7 @@ class Note:
     def set_content(self, content: bytes):
 
         if content == None:
+            self.content = content
             return
 
         if isinstance(content, bytes):
