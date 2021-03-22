@@ -13,7 +13,7 @@ class TestNoteDatabase(unittest.TestCase):
         note is added into database
         """
 
-        note = self.get_test_note_object()
+        note = Note(file=DEFAULT_TEST_FILE_PATH)
         note_id = self.db.insert_note(note)
 
         self.assertEqual(type(note_id), int)
@@ -57,5 +57,6 @@ class TestNoteDatabase(unittest.TestCase):
         self.db.delete_note(note)
         self.assertEqual(self.db.read_note(note), None)
 
-    def get_test_note_object(self):
-        return Note(content=Note.file_to_binary(DEFAULT_TEST_FILE_PATH))
+
+if __name__ == "__main__":
+    unittest.main()
