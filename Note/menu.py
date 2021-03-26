@@ -1,5 +1,12 @@
-from Note.database import NoteDatabase
+"""
+menu.py
 
+
+Build and execute query's
+
+"""
+
+from Note.database import NoteDatabase
 
 ListMenu = None
 
