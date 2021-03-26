@@ -14,7 +14,9 @@ class TestNoteDatabase(unittest.TestCase):
         """
 
         note = Note(file=DEFAULT_TEST_FILE_PATH)
-        note_id = self.db.insert_note(note)
+
+        with NoteDatabase.get_database() as db:
+            note_id = db.insert_note(note)
 
         self.assertEqual(type(note_id), int)
 
@@ -22,8 +24,8 @@ class TestNoteDatabase(unittest.TestCase):
         """
         list of note objects are returned
         """
-
-        notes = self.db.read_all_notes()
+        with NoteDatabase.get_database() as db:
+            notes = db.read_all_notes()
 
         for note in notes:
             self.assertIsInstance(note, Note)
@@ -37,25 +39,24 @@ class TestNoteDatabase(unittest.TestCase):
 
         note = Note(note_id=note_id)
 
-        note = self.db.read_note(note)
+        with NoteDatabase.get_database() as db:
+            note = db.read_note(note)
 
-        message = f"{note_id} != {note}"
-
-        self.assertTrue(note == None or note_id == note.get_id(), message)
+        self.assertTrue(note == None or note_id == note.get_id())
 
     def test_delete_note(self):
         """
         Delete note from database
         """
+        with NoteDatabase.get_database() as db:
+            notes = list(db.read_all_notes())
 
-        notes = list(self.db.read_all_notes())
+            if len(notes) <= 0:
+                self.skipTest("No notes to delete")
 
-        if len(notes) <= 0:
-            self.skipTest("No notes to delete")
-
-        note = notes[-1]
-        self.db.delete_note(note)
-        self.assertEqual(self.db.read_note(note), None)
+            note = notes[-1]
+            db.delete_note(note)
+            self.assertEqual(db.read_note(note), None)
 
 
 if __name__ == "__main__":

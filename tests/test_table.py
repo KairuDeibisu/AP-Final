@@ -5,7 +5,6 @@ from Note.table import Note, Tag
 
 
 class TestNote(unittest.TestCase):
-    db = NoteDatabase.get_database()
 
     def test_create_note(self):
         """
@@ -28,8 +27,12 @@ class TestNote(unittest.TestCase):
         note = Note(file=path)
 
         self.assertIsInstance(note.get_content(), bytes)
+        self.assertIsInstance(note.get_content_string(), str)
 
     def test_str(self):
+        """
+        Str and Repr override
+        """
         path = "test.txt"
         note = Note(file=path)
 
@@ -38,6 +41,20 @@ class TestNote(unittest.TestCase):
             self.assertIsInstance(str(note), str)
         except TypeError as e:
             self.fail(e)
+
+    def test_equal(self):
+        """
+        Does note == equal note use the notes id
+        """
+
+        note1 = Note(note_id=1)
+        note2 = Note(note_id=1)
+        note3 = Note(note_id=3)
+
+        self.assertTrue(note1 == note2)
+        self.assertTrue(note1 != note3)
+        self.assertTrue(note2 == note1)
+        self.assertTrue(note2 != note3)
 
 
 if __name__ == "__main__":

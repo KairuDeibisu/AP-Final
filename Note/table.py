@@ -34,6 +34,12 @@ class Note:
     def __repr__(self) -> str:
         return str((self.note_id, self.content, self.date, self.active))
 
+    def __eq__(self, o: object) -> bool:
+        if isinstance(o, type(self)):
+            return self.get_id() == o.get_id()
+
+        return False
+
     def str(self):
         """
         Return object as a formated string
