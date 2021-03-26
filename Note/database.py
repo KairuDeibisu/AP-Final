@@ -13,6 +13,9 @@ from Note.table import Note
 import mysql.connector
 from mysql.connector import cursor
 
+
+NoteDatabase = None
+
 NOTES_TABLE = """
 CREATE TABLE IF NOT EXISTS note(
 	note_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -190,6 +193,7 @@ class NoteDatabase(Database, IDatabase):
     NoteDatabase handles the database operations
     """
     ORDER_BY_DATE = "ORDER BY date_created"
+    LIMIT = "LIMIT"
 
     def insert_note(self, table) -> int:
 
@@ -225,16 +229,24 @@ class NoteDatabase(Database, IDatabase):
         self.execute(query, args)
         self.commit()
 
-    def read_all_notes(self, order=None) -> list[Note]:
+    def read_all_notes(self, order=None, limit=None) -> list[Note]:
 
         query = "SELECT * FROM note"
 
+        args = (limit,)
+
         if order != None:
-            query += order
+            query += " " + order
+
+        if limit != None:
+            query += " " + self.LIMIT + " " + "%s"
 
         query += ";"
 
-        self.execute(query)
+        if limit != None:
+            self.execute(query, args)
+        else:
+            self.execute(query)
 
         return self._note_generator()
 
@@ -306,7 +318,7 @@ class NoteDatabase(Database, IDatabase):
         database.commit()
 
     @staticmethod
-    def get_database():
+    def get_database() -> NoteDatabase:
 
         auth = Database._database_configuration(DEFAULT_CONFIGURATION_PATH)
         db = NoteDatabase(auth["user"], auth["password"], auth["host"])

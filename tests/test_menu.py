@@ -1,16 +1,12 @@
 
 import unittest
 from Note.menu import Executor, ListMenu
+from Note.database import NoteDatabase
 
 
 class TestListMenu(unittest.TestCase):
 
-    def test_menu_name(self):
-        """
-        Menu has a name
-        """
-
-        self.assertEqual(ListMenu.MENU_NAME, ListMenu.MENU_NAME)
+    menu = ListMenu({"date": NoteDatabase.ORDER_BY_DATE, "limit": 5})
 
     def test_is_subclass(self):
         """
@@ -22,13 +18,11 @@ class TestListMenu(unittest.TestCase):
         """
         Menu returns results limited
         """
-        pass
 
-    def test_search_date(self):
-        """
-        Menu returns results by date
-        """
-        pass
+        notes = self.menu.execute()
+        notes = list(notes)
+
+        self.assertTrue(len(notes) <= self.menu.limit)
 
     def test_search_tag(self):
         """

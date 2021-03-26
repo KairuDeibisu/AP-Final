@@ -30,7 +30,7 @@ class ListMenu(Executor):
         self.date = args.get("date", self.DEFAULT)
         self.tags_list = args.get("tags", self.DEFAULT)
 
-    def execute(self):
+    def execute(self) -> list[ListMenu]:
 
         with NoteDatabase.get_database() as db:
-            pass
+            return db.read_all_notes(self.date, limit=self.limit)
