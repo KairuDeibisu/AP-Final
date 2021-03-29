@@ -35,12 +35,14 @@ class ListMenu(Executor):
         super().__init__(args)
 
         self.limit = args.get("limit", self.DEFAULT)
-        self.tags_list = args.get("tags", self.DEFAULT)
+        self.range = args.get("range", self.DEFAULT)
+        self.tags = args.get("tags", self.DEFAULT)
 
     def execute(self):
 
         with NoteDatabase.get_database() as db:
-            notes = db.read_all_notes(limit=self.limit)
+            notes = db.read_all_notes(
+                limit=self.limit)
             NoteDisplay(notes).show()
 
 

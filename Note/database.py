@@ -229,14 +229,11 @@ class NoteDatabase(Database, IDatabase):
         self.execute(query, args)
         self.commit()
 
-    def read_all_notes(self, order=None, limit=None) -> list[Note]:
+    def read_all_notes(self, limit=None) -> list[Note]:
 
         query = "SELECT * FROM note"
 
         args = (limit,)
-
-        if order != None:
-            query += " " + order
 
         if limit != None:
             query += " " + self.LIMIT + " " + "%s"
