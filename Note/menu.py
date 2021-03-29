@@ -8,6 +8,7 @@ Build and execute query's
 
 from Note.database import NoteDatabase
 from Note.display import NoteDisplay
+from Note.request import NoteRequest
 
 
 class Executor:
@@ -36,13 +37,15 @@ class ListMenu(Executor):
 
         self.limit = args.get("limit", self.DEFAULT)
         self.range = args.get("range", self.DEFAULT)
-        self.tags = args.get("tags", self.DEFAULT)
+        self.tag = args.get("tag", self.DEFAULT)
 
     def execute(self):
 
         with NoteDatabase.get_database() as db:
-            notes = db.read_all_notes(
-                limit=self.limit)
+            request = NoteRequest(
+                limit=self.limit,
+                tag=self.tag)
+            notes = db.read(request)
             NoteDisplay(notes).show()
 
 

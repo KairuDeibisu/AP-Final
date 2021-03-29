@@ -6,7 +6,7 @@ from Note.database import NoteDatabase
 
 class TestListMenu(unittest.TestCase):
 
-    menu = ListMenu({"date": NoteDatabase.ORDER_BY_DATE, "limit": 5})
+    menu = ListMenu({"limit": 5})
 
     def test_is_subclass(self):
         """

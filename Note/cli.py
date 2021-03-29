@@ -39,19 +39,10 @@ def build_list_menu(menus_parser):
         "filters")
     list_parser_filter_group.add_argument(
         "-t",
-        "--tags",
+        "--tag",
         type=str,
-        action="extend",
-        nargs="+",
+        nargs=1,
         default=None,
-        help="Filter list output by tags"
-    )
-    list_parser_filter_group.add_argument(
-        "-r",
-        "--range",
-        type=int,
-        action="extend",
-        nargs=2,
-        help="Filter list output by id range"
+        help="Filter list output by tag"
     )
     return list_parser

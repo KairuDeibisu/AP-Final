@@ -1,6 +1,7 @@
 import unittest
 from tests import DEFAULT_TEST_FILE_PATH
 from Note.database import NoteDatabase
+from Note.request import NoteRequest
 from Note.table import Note
 
 
@@ -8,55 +9,100 @@ class TestNoteDatabase(unittest.TestCase):
 
     db = NoteDatabase.get_database()
 
-    def test_insert_note(self):
+    def test_read(self):
         """
-        note is added into database
+        Notes can be read from database
         """
 
+        with NoteDatabase.get_database() as db:
+
+            limit = 5
+
+            request = NoteRequest(limit=limit)
+            notes = db.read(request)
+            notes = list(notes)
+
+            n = len(notes)
+            if n <= 0:
+                self.skipTest("No notes to read")
+
+            self.assertLessEqual(n, limit)
+            for note in notes:
+                self.assertTrue(isinstance(note, Note))
+
+    def test_create(self):
+        """
+        Notes can be create in the database
+        """
         note = Note(file=DEFAULT_TEST_FILE_PATH)
 
         with NoteDatabase.get_database() as db:
-            note_id = db.insert_note(note)
 
-        self.assertEqual(type(note_id), int)
+            content = note.get_content()
+            request = NoteRequest(content=content)
 
-    def test_read_all_notes(self):
+            ID = db.create(request)
+
+            request = NoteRequest(ID=ID)
+
+            note, = db.read(request)
+
+            self.assertEqual(note.get_id(), ID)
+            self.assertEqual(note.get_content(), content)
+
+    def test_update(self):
         """
-        list of note objects are returned
+        Notes in the database can be updated
         """
-        with NoteDatabase.get_database() as db:
-            notes = db.read_all_notes()
-
-        for note in notes:
-            self.assertIsInstance(note, Note)
-
-    def test_read_note(self):
-        """
-        note is returned with id
-        """
-
-        note_id = 1
-
-        note = Note(note_id=note_id)
+        note = Note(file=DEFAULT_TEST_FILE_PATH)
 
         with NoteDatabase.get_database() as db:
-            note = db.read_note(note)
+            request = NoteRequest(content=note.get_content())
 
-        self.assertTrue(note == None or note_id == note.get_id())
+            ID = db.create(request)
 
-    def test_delete_note(self):
+            request = NoteRequest(ID=ID)
+
+            note, = db.read(request)
+            note.set_active(False)
+
+            request = NoteRequest(
+                ID=note.get_id(),
+                content=note.get_content(),
+                active=note.get_active())
+
+            db.update(request)
+
+            request = NoteRequest(ID=ID)
+            note, = db.read(request)
+
+            self.assertFalse(note.get_active())
+
+    def test_delete(self):
         """
-        Delete note from database
+        Notes can be deleted from the database
         """
         with NoteDatabase.get_database() as db:
-            notes = list(db.read_all_notes())
+            request = NoteRequest(limit=5)
+
+            notes = db.read(request)
+            notes = list(notes)
 
             if len(notes) <= 0:
                 self.skipTest("No notes to delete")
 
-            note = notes[-1]
-            db.delete_note(note)
-            self.assertEqual(db.read_note(note), None)
+            note = notes[0]
+
+            request = NoteRequest(ID=note.get_id())
+
+            db.delete(request)
+
+            request = NoteRequest(ID=note.get_id())
+            notes = db.read(request)
+
+            note = next(notes, None)
+
+            self.assertEqual(note, None)
 
 
 if __name__ == "__main__":

@@ -7,9 +7,11 @@ Database objects
 
 import json
 import abc
-from typing import Generator
+from re import MULTILINE
+from typing import Generator, Iterable
 from Note import DEFAULT_CONFIGURATION_PATH
 from Note.table import Note
+from Note.request import Request
 import mysql.connector
 from mysql.connector import cursor
 
@@ -73,7 +75,7 @@ class Database:
         self._db.close()
         return True
 
-    def execute(self, query, args: tuple = None):
+    def execute(self, query, args: tuple = None, multi=False):
         """
         Execute query to the database.
 
@@ -81,7 +83,7 @@ class Database:
         :param args: query arguments
 
         """
-        self.cursor().execute(query, args)
+        self.cursor().execute(query, args, multi=multi)
 
     def commit(self):
         """
@@ -119,61 +121,48 @@ class Database:
         return data
 
 
-class IDatabase:
+class IDatabase(metaclass=abc.ABCMeta):
 
     """
     Database interface for database operations.
     """
 
     @abc.abstractmethod
-    def insert_note(self, table: Note):
+    def create(self, request: Request) -> int:
         """
-        Insert a note object into the database.
+        Create a note object in the database.
 
-        :param table: object to insert into database
+        :param request: request to make to the database
         :returns: note_id
         """
         pass
 
     @abc.abstractmethod
-    def update_note(self, table: Note):
+    def update(self, request: Request):
         """
         Update a note entry in the database.
 
-        :param table: object to update the database
+        :param request: request to make to the database
         """
         pass
 
     @abc.abstractmethod
-    def read_note(self, table: Note) -> Note:
+    def read(self, request: Request) -> Iterable[Note]:
         """
 
-        Get note entry from database.
+        Read note entrys from database.
 
-        :param table: note object with id to retrieve 
+        :param request: request to make to the database
         :returns: a note object from the table
         """
         pass
 
     @abc.abstractmethod
-    def delete_note(self, table):
+    def delete(self, request: Request):
         """
         Delete note from database.
 
-        :param table: note object with id to delete.
-        """
-        pass
-
-    @abc.abstractmethod
-    def read_all_notes(self, order=None) -> list[Note]:
-        """
-
-        Get list of all notes
-
-        :type order: class attribute
-        :param order: SQL statment to order by
-
-        :returns: a list of all entrys in the table
+        :param request: request to make to the database
         """
         pass
 
@@ -192,64 +181,41 @@ class NoteDatabase(Database, IDatabase):
     """
     NoteDatabase handles the database operations
     """
-    ORDER_BY_DATE = "ORDER BY date_created"
-    LIMIT = "LIMIT"
 
-    def insert_note(self, table) -> int:
+    def read(self, request: Request) -> Note:
+        query, args = request.select_query()
 
-        query = "INSERT INTO note (content) VALUES(%s);"
-        args = (table.get_content(),)
+        self.execute(query, args)
+
+        return self._note_generator()
+
+    def create(self, request: Request) -> int:
+
+        query, args = request.create_query()
 
         self.execute(query, args)
         self.commit()
 
         return self.cursor().lastrowid
 
-    def update_note(self, table):
-
-        query = "UPDATE note SET content = %s, active = %s WHERE note_id = %s;"
-        args = (table.get_content(), table.get_active(), table.get_id())
+    def update(self, request: Request):
+        query, args = request.update_query()
 
         self.execute(query, args)
         self.commit()
 
-    def read_note(self, table) -> Note:
-        query = "SELECT * from note WHERE note_id = %s;"
-        args = (table.get_id(),)
+    def delete(self, request: Request):
 
-        self.execute(query, args)
+        query, args = request.delete_query()
 
-        return next(self._note_generator(), None)
+        tags_delete, note_delete = query.split(";", 1)
+        self.execute(tags_delete + ";", (args[0],))
+        self.execute(note_delete, (args[1],))
 
-    def delete_note(self, table):
-
-        query = "DELETE FROM note WHERE note_id = %s;"
-        args = (table.get_id(),)
-
-        self.execute(query, args)
         self.commit()
-
-    def read_all_notes(self, limit=None) -> list[Note]:
-
-        query = "SELECT * FROM note"
-
-        args = (limit,)
-
-        if limit != None:
-            query += " " + self.LIMIT + " " + "%s"
-
-        query += ";"
-
-        if limit != None:
-            self.execute(query, args)
-        else:
-            self.execute(query)
-
-        return self._note_generator()
 
     def _note_generator(self) -> Generator:
         """
-
         Genearate notes from current query
 
         :returns: a generator of notes from the current qurey
