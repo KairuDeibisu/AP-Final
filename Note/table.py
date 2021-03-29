@@ -10,9 +10,7 @@ from datetime import date, datetime
 
 
 class Note:
-    """
-    Note class stores data about note
-    """
+    """dataclass repersenting a note."""
 
     def __init__(self,
                  note_id: int = None,
