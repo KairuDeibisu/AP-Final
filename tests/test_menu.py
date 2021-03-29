@@ -14,16 +14,6 @@ class TestListMenu(unittest.TestCase):
         """
         self.assertTrue(issubclass(ListMenu, Executor))
 
-    def test_search_limit(self):
-        """
-        Menu returns results limited
-        """
-
-        notes = self.menu.execute()
-        notes = list(notes)
-
-        self.assertTrue(len(notes) <= self.menu.limit)
-
     def test_search_tag(self):
         """
         Menu returns results with tag

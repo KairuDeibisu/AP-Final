@@ -1,17 +1,57 @@
 """
 cli.py
 
-handle user input, is the entry point to the application 
+user commands
 """
 import sys
-from Note.database import NoteDatabase as db
-from Note.table import Note
+import argparse
+from Note.menu import Executor
 
 
-def main(argv) -> int:
+def list_menu(parser):
     pass
 
 
-if __name__ == "__main__":
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(prog="Note")
 
-    exit(main(sys.argv))
+    menus_parser = parser.add_subparsers(dest="menu", title="Commands")
+
+    list_menu_parser = build_list_menu(menus_parser)
+
+    args = parser.parse_args(argv)
+
+    Executor(vars(args)).execute()
+
+    return 0
+
+
+def build_list_menu(menus_parser):
+    list_parser = menus_parser.add_parser(name="list", help="View Notes")
+    list_parser.add_argument(
+        "-l",
+        "--limit",
+        type=int,
+        default=5,
+        help="Limit list output, defaults to 5"
+    )
+    list_parser_filter_group = list_parser.add_argument_group(
+        "filters")
+    list_parser_filter_group.add_argument(
+        "-t",
+        "--tags",
+        type=str,
+        action="extend",
+        nargs="+",
+        default=None,
+        help="Filter list output by tags"
+    )
+    list_parser_filter_group.add_argument(
+        "-r",
+        "--range",
+        type=int,
+        action="extend",
+        nargs=2,
+        help="Filter list output by id range"
+    )
+    return list_parser

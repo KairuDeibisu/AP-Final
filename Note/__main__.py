@@ -2,11 +2,9 @@
 """
 __main__.py
 """
-
-from Note import cli
-
 import sys
+from Note import cli
 
 
 if __name__ == "__main__":
-    exit(cli.main(sys.argv))
+    sys.exit(cli.main())

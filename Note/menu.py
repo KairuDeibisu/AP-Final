@@ -7,22 +7,23 @@ Build and execute query's
 """
 
 from Note.database import NoteDatabase
-
-ListMenu = None
+from Note.display import NoteDisplay
 
 
 class Executor:
-
-    menus = [ListMenu]
 
     def __init__(self, args):
         self.args = args
 
     def execute(self):
 
-        for menu in self.menus:
+        for menu in menus:
+
+            if self.args.get("menu") == None:
+                return
+
             if menu.MENU_NAME == self.args.get("menu"):
-                self.menus(self.args).execute()
+                menu(self.args).execute()
 
 
 class ListMenu(Executor):
@@ -34,10 +35,13 @@ class ListMenu(Executor):
         super().__init__(args)
 
         self.limit = args.get("limit", self.DEFAULT)
-        self.date = args.get("date", self.DEFAULT)
         self.tags_list = args.get("tags", self.DEFAULT)
 
-    def execute(self) -> list[ListMenu]:
+    def execute(self):
 
         with NoteDatabase.get_database() as db:
-            return db.read_all_notes(self.date, limit=self.limit)
+            notes = db.read_all_notes(limit=self.limit)
+            NoteDisplay(notes).show()
+
+
+menus = [ListMenu]

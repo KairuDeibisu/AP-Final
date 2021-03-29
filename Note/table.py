@@ -7,6 +7,11 @@ Database table objects
 """
 
 from datetime import date, datetime
+from typing import List
+
+
+class Tag:
+    pass
 
 
 class Note:
@@ -22,6 +27,7 @@ class Note:
         self.set_content(content)
         self.set_date(date)
         self.active = active
+        self.tags = None
 
         if file != None:
             self.set_content_from_file(file)
@@ -45,7 +51,7 @@ class Note:
         return f"\nID:{self.note_id} Created:{self.date}\n" \
             + ("-" * 30) + \
             f"\n{self.get_content_string()}\n" \
-            + ("-" * 30)
+
 
     def set_content_from_file(self, path):
         with open(path, "r") as f:
@@ -59,6 +65,12 @@ class Note:
 
     def get_active(self):
         return self.active
+
+    def set_tags(self, tags: List[Tag]):
+        self.tags = tags
+
+    def get_tags(self) -> List[Tag]:
+        return self.tags
 
     def set_active(self, active: int):
         self.active = int(active)
@@ -92,7 +104,3 @@ class Note:
             return
 
         self.date = date
-
-
-class Tag:
-    pass
