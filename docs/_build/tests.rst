@@ -20,6 +20,14 @@ tests.test\_menu module
    :undoc-members:
    :show-inheritance:
 
+tests.test\_request module
+--------------------------
+
+.. automodule:: tests.test_request
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 tests.test\_table module
 ------------------------
 

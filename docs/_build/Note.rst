@@ -36,6 +36,14 @@ Note.menu module
    :undoc-members:
    :show-inheritance:
 
+Note.request module
+-------------------
+
+.. automodule:: Note.request
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Note.table module
 -----------------
 
