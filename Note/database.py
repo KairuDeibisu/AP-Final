@@ -1,14 +1,14 @@
 """
-database.py
 
-Database objects
+.. module:: database
+    :platform: Unix, Windows
+    :synopsis: Database Connection and Managment.
 
 """
 
 import json
 import abc
-from re import MULTILINE
-from typing import Generator, Iterable
+from typing import Generator, Iterable, List, Tuple
 from Note import DEFAULT_CONFIGURATION_PATH
 from Note.table import Note
 from Note.request import Request
@@ -41,8 +41,14 @@ DATABASE_NAME = "notes"
 
 class Database:
 
-    """
-    Base class for database.
+    """Base class for database.
+
+    Handles connection to the database.
+
+    .. note::
+
+       Overide to connect to a new relational database managament system.
+
     """
 
     def __init__(self,
@@ -50,11 +56,17 @@ class Database:
                  password: str,
                  host: str,
                  database: str = None) -> None:
-        """
-        :param user: database username
-        :param password: database password
-        :param host: database ip
-        :param database: select what database to use
+        """Configure a database instance.
+
+        Args:
+            user: database username
+            password: database password
+            host: database ip
+
+        Kwargs:
+            database: select what database to use
+                'USE note'
+
         """
         self._user = user
         self._password = password
@@ -75,29 +87,49 @@ class Database:
         self._db.close()
         return True
 
-    def execute(self, query, args: tuple = None, multi=False):
-        """
-        Execute query to the database.
+    def execute(self, query: str, args: Tuple = None, multi: bool = False):
+        """Execute query to the database.
 
-        :param query: MYSQL query
-        :param args: query arguments
+        Executes given query to the currently connected database instance.
+
+        Args:
+            query: A MYSQL query statment.
+
+            args: Arguments for the current query.
+
+            multi: Specify where query has more then one statment. Arguments should not be passed in this case.
+
+            >>> execute("USE notes; SELECT * FROM note;", multi=True)
+
 
         """
         self.cursor().execute(query, args, multi=multi)
 
     def commit(self):
-        """
-        Commit changes to the database
+        """Commit Changes
+
+        Commit changes to the current database instance.
         """
         self._db.commit()
 
     def cursor(self) -> cursor:
-        """
-        :returns: a cursor object that's conected to the database. Holds the output of execute. 
+        """Get a database cursor
+
+        Gets database cursor thats connected to the current database.
+
+        Returns:
+            A cursor object to the currently conected database instance. Holds the output of execute.
+                >>> db.read(request)
+                >>> for note in db.cursor(): print(note)
+
         """
         return self._cursor
 
     def _connect(self):
+        """Connect to the database
+
+        Connect to the current database management system.
+        """
         self._db = mysql.connector.connect(
             user=self._user,
             passwd=self._password,
@@ -111,8 +143,17 @@ class Database:
 
     @staticmethod
     def _database_configuration(path: str) -> dict:
-        """
-        Load configuration from file
+        """Configure Database
+
+        Configure database from configuration file.
+
+        Returns:
+            A dict conntaning server configuration.
+                {"host": "localhost","user": "root",
+                 "password": "password1"}
+
+            If keys not found the program will fail to connect to the database.
+
         """
 
         with open(path, "r") as f:
@@ -123,55 +164,71 @@ class Database:
 
 class IDatabase(metaclass=abc.ABCMeta):
 
-    """
-    Database interface for database operations.
+    """Database interface for database operations.
+
+    Interface for current database. This allows for easy switching of database managment systems.
+
+    .. note::
+
+       Databases should inherit this interface.
+
     """
 
     @abc.abstractmethod
     def create(self, request: Request) -> int:
-        """
-        Create a note object in the database.
+        """Create database entry.
 
-        :param request: request to make to the database
-        :returns: note_id
+        Send a create request to the currently connect database.
+
+        Args:
+            request: Request to make to the database. Object that translates user input to MYSQL statements.
         """
         pass
 
     @abc.abstractmethod
     def update(self, request: Request):
-        """
-        Update a note entry in the database.
+        """Update database entry.
 
-        :param request: request to make to the database
+        Send a update request to the currently connect database.
+
+        Args:
+            request: Request to make to the database. Object that translates user input to MYSQL statements.
         """
         pass
 
     @abc.abstractmethod
     def read(self, request: Request) -> Iterable[Note]:
-        """
+        """Read from database.
 
-        Read note entrys from database.
+        Send a read request to the currently connect database.
 
-        :param request: request to make to the database
-        :returns: a note object from the table
+        Args:
+            request: Request to make to the database. Object that translates user input to MYSQL statements.
+
+        Returns:
+            A iterable of note objects.
         """
         pass
 
     @abc.abstractmethod
     def delete(self, request: Request):
-        """
-        Delete note from database.
+        """Delate database entry.
 
-        :param request: request to make to the database
+        Send a delete request to the currently connect database.
+
+        Args:
+            request: Request to make to the database. Object that translates user input to MYSQL statements.
         """
         pass
 
     @abc.abstractstaticmethod
     def get_database(self) -> Database:
-        """
-        Get configured note database
+        """Get Database
 
-        :returns: a database
+        Get configured database
+
+        Returns:
+            A configured database instance.
         """
         pass
 
