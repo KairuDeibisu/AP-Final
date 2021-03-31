@@ -28,10 +28,10 @@ Note.display module
    :undoc-members:
    :show-inheritance:
 
-Note.menu module
-----------------
+Note.executor module
+--------------------
 
-.. automodule:: Note.menu
+.. automodule:: Note.executor
    :members:
    :undoc-members:
    :show-inheritance:
