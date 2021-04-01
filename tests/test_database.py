@@ -22,8 +22,7 @@ class TestNoteDatabase(unittest.TestCase):
             notes = db.read(request)
             notes = list(notes)
 
-            n = len(notes)
-            if n <= 0:
+            if n := len(notes) <= 0:
                 self.skipTest("No notes to read")
 
             self.assertLessEqual(n, limit)

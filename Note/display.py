@@ -28,10 +28,7 @@ class NoteDisplay(Display):
 
     def show(self):
         for item in self.items:
-
-            tags = None
-
-            if item.get_tags() != None:
+            if (tags := item.get_tags()) != None:
                 tags = ", ".join(item.get_tags())
             print()
             print("ID ", item.get_id())

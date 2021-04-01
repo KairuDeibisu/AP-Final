@@ -20,12 +20,12 @@ class Note:
     def __init__(self,
                  note_id: int = None,
                  content: bytes = None,
-                 date: date = None,
+                 date_: date = None,
                  active: bool = None,
                  file=None) -> None:
         self.note_id = note_id
         self.set_content(content)
-        self.set_date(date)
+        self.set_date(date_)
         self.active = active
         self.tags = None
 
@@ -36,7 +36,7 @@ class Note:
         return self.str()
 
     def __repr__(self) -> str:
-        return str((self.note_id, self.content, self.date, self.active))
+        return str((self.note_id, self.content, self.date_, self.active))
 
     def __eq__(self, o: object) -> bool:
         if isinstance(o, type(self)):
@@ -48,7 +48,7 @@ class Note:
         """
         Return object as a formated string
         """
-        return f"\nID:{self.note_id} Created:{self.date}\n" \
+        return f"\nID:{self.note_id} Created:{self.date_}\n" \
             + ("-" * 30) + \
             f"\n{self.get_content_string()}\n" \
 
@@ -95,12 +95,12 @@ class Note:
         return self.content.decode("utf-8")
 
     def get_date(self):
-        return self.date
+        return self.date_
 
-    def set_date(self, date: datetime):
+    def set_date(self, date_: datetime):
 
-        if date == None:
-            self.date = datetime.now().date()
+        if date_ == None:
+            self.date_ = datetime.now().date()
             return
 
-        self.date = date
+        self.date_ = date_

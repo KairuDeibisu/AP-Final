@@ -3,13 +3,9 @@ cli.py
 
 user commands
 """
-import sys
+
 import argparse
 from Note.executor import Executor, ListMenuExecutor
-
-
-def list_menu(parser):
-    pass
 
 
 def main(argv=None) -> int:

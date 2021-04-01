@@ -292,7 +292,7 @@ class NoteDatabase(Database, IDatabase):
 
         return Note(note_id=note[0],
                     content=note[1],
-                    date=note[2],
+                    date_=note[2],
                     active=note[3])
 
     @staticmethod
