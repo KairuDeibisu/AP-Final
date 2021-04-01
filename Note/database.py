@@ -244,7 +244,10 @@ class NoteDatabase(Database, IDatabase):
 
         self.execute(query, args)
 
-        return self._note_generator()
+        if type(request.get_type()) == type(Note):
+            return self._note_generator()
+
+        raise NotImplementedError("Can't support return type!")
 
     def create(self, request: Request) -> int:
 

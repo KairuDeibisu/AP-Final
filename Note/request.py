@@ -3,9 +3,12 @@
 import abc
 import re
 from typing import List, Tuple
+from Note.table import Note, Tag
 
 
 class Request(metaclass=abc.ABCMeta):
+
+    _request_type = None
 
     @abc.abstractmethod
     def select_query(self) -> Tuple[str, Tuple]:
@@ -37,9 +40,15 @@ class Request(metaclass=abc.ABCMeta):
         Delete Note
         """
         pass
+    
+    @classmethod
+    def get_type(self):
+        return self._request_type
 
 
 class NoteRequest(Request):
+
+    _request_type = Note
 
     def __init__(
             self,
