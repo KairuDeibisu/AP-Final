@@ -33,7 +33,7 @@ class NoteDisplay(Display):
 
             if item.get_tags() != None:
                 tags = ", ".join(item.get_tags())
-
+            print()
             print("ID ", item.get_id())
             print("Tags: ", tags)
             print("Date: ", item.get_date())

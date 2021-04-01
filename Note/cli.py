@@ -5,7 +5,7 @@ user commands
 """
 import sys
 import argparse
-from Note.menu import Executor
+from Note.executor import Executor, ListMenuExecutor
 
 
 def list_menu(parser):
@@ -18,6 +18,7 @@ def main(argv=None) -> int:
     menus_parser = parser.add_subparsers(dest="menu", title="Commands")
 
     list_menu_parser = build_list_menu(menus_parser)
+    list_menu_parser.set_defaults(func=ListMenuExecutor)
 
     args = parser.parse_args(argv)
 
