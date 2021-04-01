@@ -154,12 +154,16 @@ class Database:
 
             If keys not found the program will fail to connect to the database.
 
+        Raises:
+            FileNotFoundError: Configuration file not found
         """
 
-        with open(path, "r") as f:
-            data = json.load(f)
+        try:
+            with open(path, "r") as f:
+                return json.load(f)
 
-        return data
+        except FileNotFoundError as e:
+            raise FileNotFoundError("Configuration file not found!") from None
 
 
 class IDatabase(metaclass=abc.ABCMeta):
