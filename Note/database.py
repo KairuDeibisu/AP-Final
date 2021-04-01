@@ -1,14 +1,14 @@
 """
+Platform:
+    Unix, Windows
 
-.. module:: database
-    :platform: Unix, Windows
-    :synopsis: Database Connection and Managment.
-
+Synopsis:
+    Database Connection and Managment.
 """
 
 import json
 import abc
-from typing import Generator, Iterable, List, Tuple
+from typing import Any, Iterable, Tuple
 from Note import DEFAULT_CONFIGURATION_PATH
 from Note.table import Note
 from Note.request import Request
@@ -197,7 +197,7 @@ class IDatabase(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def read(self, request: Request) -> Iterable[Note]:
+    def read(self, request: Request) -> Iterable[Any]:
         """Read from database.
 
         Send a read request to the currently connect database.
@@ -206,7 +206,7 @@ class IDatabase(metaclass=abc.ABCMeta):
             request: Request to make to the database. Object that translates user input to MYSQL statements.
 
         Returns:
-            A iterable of note objects.
+            A iterable objects.
         """
         pass
 
@@ -239,15 +239,15 @@ class NoteDatabase(Database, IDatabase):
     NoteDatabase handles the database operations
     """
 
-    def read(self, request: Request) -> Note:
+    def read(self, request: Request) -> Iterable[any]:
         query, args = request.select_query()
 
         self.execute(query, args)
 
-        if type(request.get_type()) == type(Note):
-            return self._note_generator()
+        if type((type_ := request.get_type())) == type(Note):
+            return self._get_notes()
 
-        raise NotImplementedError("Can't support return type!")
+        raise NotImplementedError("{type_} Can't support return type!")
 
     def create(self, request: Request) -> int:
 
@@ -274,20 +274,19 @@ class NoteDatabase(Database, IDatabase):
 
         self.commit()
 
-    def _note_generator(self) -> Generator:
-        """
-        Genearate notes from current query
+    def _get_notes(self) -> list:
+        """Genearate notes from current query.
 
-        :returns: a generator of notes from the current qurey
+        Returns:
+            A list of notes from the current qurey.
         """
-        for note in self.cursor():
-            yield self._convert_note(note)
+        return list(map(self._convert_note, self.cursor()))
 
     def _convert_note(self, note: tuple) -> Note:
-        """
-        Convert note from sql query into python Note object
+        """Convert note from sql query into python Note object.
 
-        :returns: a note object
+        Returns:
+            A note object.
         """
 
         return Note(note_id=note[0],

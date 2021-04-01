@@ -19,14 +19,13 @@ class TestNoteDatabase(unittest.TestCase):
             limit = 5
 
             request = NoteRequest(limit=limit)
-            notes = db.read(request)
-            notes = list(notes)
+            notes_list = db.read(request)
 
-            if n := len(notes) <= 0:
+            if n := len(notes_list) <= 0:
                 self.skipTest("No notes to read")
 
             self.assertLessEqual(n, limit)
-            for note in notes:
+            for note in notes_list:
                 self.assertTrue(isinstance(note, Note))
 
     def test_create(self):
@@ -82,26 +81,23 @@ class TestNoteDatabase(unittest.TestCase):
         Notes can be deleted from the database
         """
         with NoteDatabase.get_database() as db:
+
             request = NoteRequest(limit=5)
 
-            notes = db.read(request)
-            notes = list(notes)
+            notes_list = db.read(request)
 
-            if len(notes) <= 0:
+            if len(notes_list) <= 0:
                 self.skipTest("No notes to delete")
 
-            note = notes[0]
+            note = notes_list[0]
 
             request = NoteRequest(ID=note.get_id())
-
             db.delete(request)
 
             request = NoteRequest(ID=note.get_id())
-            notes = db.read(request)
+            notes_list = db.read(request)
 
-            note = next(notes, None)
-
-            self.assertEqual(note, None)
+            self.assertFalse(notes_list)
 
 
 if __name__ == "__main__":

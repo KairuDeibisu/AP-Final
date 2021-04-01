@@ -181,11 +181,6 @@
 <dd></dd></dl>
 
 <dl class="py function">
-<dt id="Note.cli.list_menu">
-<code class="sig-prename descclassname"><span class="pre">Note.cli.</span></code><code class="sig-name descname"><span class="pre">list_menu</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Note.cli.list_menu" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
 <dt id="Note.cli.main">
 <code class="sig-prename descclassname"><span class="pre">Note.cli.</span></code><code class="sig-name descname"><span class="pre">main</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#Note.cli.main" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -193,7 +188,13 @@
 </div>
 <div class="section" id="module-Note.database">
 <span id="note-database-module"></span><h2>Note.database module<a class="headerlink" href="#module-Note.database" title="Permalink to this headline">¶</a></h2>
-<span class="target" id="module-database"></span><dl class="py class">
+<dl class="simple">
+<dt>Platform:</dt><dd><p>Unix, Windows</p>
+</dd>
+<dt>Synopsis:</dt><dd><p>Database Connection and Managment.</p>
+</dd>
+</dl>
+<dl class="py class">
 <dt id="Note.database.Database">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">Note.database.</span></code><code class="sig-name descname"><span class="pre">Database</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Note.database.Database" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
@@ -212,7 +213,7 @@
 
 <dl class="py method">
 <dt id="Note.database.Database.cursor">
-<code class="sig-name descname"><span class="pre">cursor</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">&lt;module</span> <span class="pre">‘mysql.connector.cursor’</span> <span class="pre">from</span> <span class="pre">‘c:\dev\ap-final\env\lib\site-packages\mysql\connector\cursor.py’&gt;</span><a class="headerlink" href="#Note.database.Database.cursor" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">cursor</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">&lt;module</span> <span class="pre">‘mysql.connector.cursor’</span> <span class="pre">from</span> <span class="pre">‘d:\school\ap</span> <span class="pre">project\note\env\lib\site-packages\mysql\connector\cursor.py’&gt;</span><a class="headerlink" href="#Note.database.Database.cursor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a database cursor</p>
 <p>Gets database cursor thats connected to the current database.</p>
 <dl>
@@ -290,13 +291,13 @@
 
 <dl class="py method">
 <dt id="Note.database.IDatabase.read">
-<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Note.request.Request</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#Note.table.Note" title="Note.table.Note"><span class="pre">Note.table.Note</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#Note.database.IDatabase.read" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Note.request.Request</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#Note.database.IDatabase.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read from database.</p>
 <p>Send a read request to the currently connect database.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>request: Request to make to the database. Object that translates user input to MYSQL statements.</p>
 </dd>
-<dt>Returns:</dt><dd><p>A iterable of note objects.</p>
+<dt>Returns:</dt><dd><p>A iterable objects.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -354,13 +355,13 @@
 
 <dl class="py method">
 <dt id="Note.database.NoteDatabase.read">
-<code class="sig-name descname"><span class="pre">read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Note.request.Request</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#Note.table.Note" title="Note.table.Note"><span class="pre">Note.table.Note</span></a><a class="headerlink" href="#Note.database.NoteDatabase.read" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Note.request.Request</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">any</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#Note.database.NoteDatabase.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read from database.</p>
 <p>Send a read request to the currently connect database.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>request: Request to make to the database. Object that translates user input to MYSQL statements.</p>
 </dd>
-<dt>Returns:</dt><dd><p>A iterable of note objects.</p>
+<dt>Returns:</dt><dd><p>A iterable objects.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -414,7 +415,7 @@
 <p>Database table objects</p>
 <dl class="py class">
 <dt id="Note.table.Note">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">Note.table.</span></code><code class="sig-name descname"><span class="pre">Note</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">note_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.date</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Note.table.Note" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">Note.table.</span></code><code class="sig-name descname"><span class="pre">Note</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">note_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.date</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Note.table.Note" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>dataclass repersenting a note.</p>
 <dl class="py method">
@@ -464,7 +465,7 @@
 
 <dl class="py method">
 <dt id="Note.table.Note.set_date">
-<code class="sig-name descname"><span class="pre">set_date</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">datetime.datetime</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Note.table.Note.set_date" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">set_date</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date_</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">datetime.datetime</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Note.table.Note.set_date" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
