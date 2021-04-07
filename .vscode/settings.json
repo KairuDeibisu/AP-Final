@@ -2,7 +2,7 @@
     "python.autoComplete.extraPaths": [
         "Note"
     ],
-    "python.pythonPath": "env\\Scripts\\python.exe",
+    "python.pythonPath": "/home/kyled/project/AP-Final/env/bin/python3.9",
     "python.analysis.extraPaths": [
         "Note",
         "tests"

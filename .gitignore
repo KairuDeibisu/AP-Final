@@ -2,3 +2,7 @@ env
 __pycache__
 test.txt
 config.json
+.env
+.vscode
+*.log
+*.egg*
