@@ -9,7 +9,6 @@ setup(
         "python-dotenv",
         "Sphinx",
         "sphinx-rtd-theme",
-        "sphinx-rtd-theme"
     ],
     entry_points="""
         [console_scripts]
