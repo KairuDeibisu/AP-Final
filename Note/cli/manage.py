@@ -91,7 +91,7 @@ def _read_message() -> str:
         return data
     except FileNotFoundError:
         typer.echo("Aborting!")
-        exit(0)
+        typer.Exit(1)
     finally:
         _remove_tmp_file()
 
