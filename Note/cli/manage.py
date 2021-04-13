@@ -1,11 +1,19 @@
 
+
+from Note.cli.validators import _format_tags_callback
+from Note.utils.strings import StringBuilder
+
 import os
 import tempfile
 import subprocess
 import logging
 
+from enum import Enum
+from typing import List, Optional
+
 import typer
 
+import Note.logging_setup
 
 logger = logging.getLogger(__name__)
 
@@ -15,28 +23,33 @@ FILENAME = "tmp_note"
 FILEPATH = os.path.join(tempfile.gettempdir(), FILENAME)
 
 EDITORS = {
-    "vim": ("vim", "-n", FILEPATH)
+    "vim": ("vim", "-n", FILEPATH),
+    "nano": ("nano", FILEPATH)
 }
+
+
+class CLIEditors(str, Enum):
+    vim = "vim"
+    nano = "nano"
 
 
 @app.command()
 def create(
-    message: str =
-        typer.Option(None, "-m", show_default=False,
-                     help="The message to add to the database.", ),
-    tags: str =
-        typer.Option("", "-t", show_default=False, help="Tags to organize message.")):
+        message: Optional[str] =
+    typer.Option(None, "-m", show_default=False,
+                 help="The message to add to the database."),
+        tags: Optional[List[str]] =
+    typer.Option(None, "-t", metavar="t", show_default=False,
+                 help="Tags to organize message.", callback=_format_tags_callback),
+        editor: CLIEditors = typer.Option("vim", show_choices=True, help="Supported editors")):
     """
     Insert note into the database.
     """
 
-    message = message if message else get_message_from_editor()
-
-    tags = tags.split(",") if tags else ""
-    tags = [tag.replace(" ", "-") for tag in tags]
+    message = message if message else get_message_from_editor(editor)
 
     logger.info(f"Note message: \n{message}")
-    logger.info(f"Note tags: \n{tags}")
+    logger.info(f"Note tags: {tags}")
 
 
 def get_message_from_editor(editor="vim") -> str:
