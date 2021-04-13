@@ -18,11 +18,11 @@ def setup(logging_level, log_file=None, filemode="a"):
     )
 
     logger = logging.getLogger(__name__)
-    logger.info(StringBuilder("Starting Logging:", logging_level))
-    logger.info(StringBuilder("Note Version:", note_version))
+    logger.info(f"Starting Logging: {logging.getLevelName(logging_level)}")
+    logger.info(f"Note Version: {note_version}")
 
-    logger.debug(StringBuilder("Python", sys.version))
-    logger.debug(StringBuilder("Platform", sys.platform))
+    logger.debug(f"Python: {sys.version}")
+    logger.debug(f"Platform: {sys.platform}")
 
 
 setup(logging.DEBUG, "main.log", "w")

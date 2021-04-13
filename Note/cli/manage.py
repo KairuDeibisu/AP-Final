@@ -1,7 +1,6 @@
 
 
 from Note.cli.validators import _format_tags_callback
-from Note.utils.strings import StringBuilder
 
 import os
 import tempfile
@@ -35,13 +34,12 @@ class CLIEditors(str, Enum):
 
 @app.command()
 def create(
-        message: Optional[str] =
-    typer.Option(None, "-m", show_default=False,
-                 help="The message to add to the database."),
-        tags: Optional[List[str]] =
-    typer.Option(None, "-t", metavar="t", show_default=False,
-                 help="Tags to organize message.", callback=_format_tags_callback),
-        editor: CLIEditors = typer.Option("vim", show_choices=True, help="Supported editors")):
+        message: Optional[str] = typer.Option(
+            None, "-m", "--message", show_default=False, help="Message to add to the database."),
+        tags: Optional[List[str]] = typer.Option(
+            None, "-t", "--tags", show_default=False, help="Tags to organize message.", callback=_format_tags_callback),
+        editor: CLIEditors = typer.Option(
+            "vim", show_choices=True, help="Supported editors.")):
     """
     Insert note into the database.
     """
@@ -50,6 +48,18 @@ def create(
 
     logger.info(f"Note message: \n{message}")
     logger.info(f"Note tags: {tags}")
+
+
+@app.command()
+def remove(
+    id_: int = typer.Argument(
+        ..., metavar="id", help="Note to remove."),
+    delete: bool = typer.Option(
+        False, show_default=False, confirmation_prompt=True, help="Delete note forever.")):
+    """
+    Remove note from database.
+    """
+    pass
 
 
 def get_message_from_editor(editor="vim") -> str:
