@@ -3,12 +3,14 @@
 from Note.cli.validators import _format_tags_callback
 
 import os
+import sys
 import tempfile
 import subprocess
 import logging
 
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Iterable, Tuple
+from dataclasses import dataclass
 
 import typer
 
@@ -21,15 +23,25 @@ app = typer.Typer(name="manage", help="Manage the database.")
 FILENAME = "tmp_note"
 FILEPATH = os.path.join(tempfile.gettempdir(), FILENAME)
 
-EDITORS = {
-    "vim": ("vim", "-n", FILEPATH),
-    "nano": ("nano", FILEPATH)
-}
+
+class Editor:
+    editors = []
+
+    def __init__(self, name: str, args: Tuple):
+        self.name = name
+        self.args = args
+        self.editors.append(self)
+
+    def __eq__(self, b):
+        return self.name == b
+
+    def __repr__(self):
+        return self.name
 
 
-class CLIEditors(str, Enum):
-    vim = "vim"
-    nano = "nano"
+class EditorChoice(str, Enum):
+    vim = str(Editor("vim", ("vim", "-n", FILEPATH)))
+    nano = str(Editor("nano", ("nano", FILEPATH)))
 
 
 @app.command()
@@ -38,7 +50,7 @@ def create(
             None, "-m", "--message", show_default=False, help="Message to add to the database."),
         tags: Optional[List[str]] = typer.Option(
             None, "-t", "--tags", show_default=False, help="Tags to organize message.", callback=_format_tags_callback),
-        editor: CLIEditors = typer.Option(
+        editor: EditorChoice = typer.Option(
             "vim", show_choices=True, help="Supported editors.")):
     """
     Insert note into the database.
@@ -62,18 +74,24 @@ def remove(
     pass
 
 
-def get_message_from_editor(editor="vim") -> str:
+def get_message_from_editor(selected_editor: str) -> str:
     """
-    Launch editor and get note message.
+    Launch editor and get a note message.
     """
 
-    logger.info(f"Starting {editor}")
+    logger.info(f"Starting {selected_editor}")
 
-    if (args := EDITORS.get(editor, None)):
-        subprocess.run(args)
-        return _read_message()
+    for editor in Editor.editors:
+        if editor == selected_editor:
 
-    raise NotImplementedError(f"editor: {editor} not implemented.")
+            process = subprocess.run(" ".join(editor.args), shell=True)
+
+            if process.returncode:
+                raise Exception(f"{editor} not installed!")
+
+            return _read_message()
+
+    raise NotImplementedError(f"editor: {selected_editor} not implemented.")
 
 
 def _read_message() -> str:

@@ -47,13 +47,20 @@ class INoteDatabase(metaclass=abc.metaclass):
     @abstractmethod
     def delete_note(self) -> None:
         """
-        Drop note from database.
+        Drop note from the database.
         """
         pass
 
     @abstractmethod
     def select_note(self) -> List[Note]:
         """
-        Select notes from database.
+        Select notes from the database.
+        """
+        pass
+
+    @abstractmethod
+    def _init_database(self):
+        """
+        Create notes database.
         """
         pass
