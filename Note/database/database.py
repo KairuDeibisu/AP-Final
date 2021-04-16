@@ -9,26 +9,17 @@ import abc
 
 class INoteDatabase(metaclass=abc.metaclass):
     """
-    Database oprations specific to the Notes database.
+    Database operations specific to the Notes database.
     """
 
     def __init__(
             self,
-            hostname: str = None,
-            username: str = None,
             password: str = None):
         """
         Connect to database.
         """
 
-        if not all((username, password, hostname)):
-            hostname = CONFIGRATION["hostname"]
-            username = CONFIGRATION["username"]
-            password = CONFIGRATION["password"]
-
-        self.hostname = hostname
-        self.username = username
-        self.password = password
+        self.password = password if password else CONFIGRATION["password"]
 
     @abstractmethod
     def insert_note(self) -> int:
