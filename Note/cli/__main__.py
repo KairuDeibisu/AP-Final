@@ -22,10 +22,6 @@ load_dotenv()
 @app.callback()
 def main(
         verbose: bool = False,
-        hostname: str = typer.Option(
-            None, envvar="NOTE_HOSTNAME"),
-        username: str = typer.Option(
-            None, envvar="NOTE_USERNAME"),
         password: str = typer.Option(
             None, envvar="NOTE_PASSWORD")):
     """
@@ -35,21 +31,17 @@ def main(
     global CONFIGRATION
     CONFIGRATION = {
         "verbose": verbose,
-        "hostname": hostname,
-        "username": username,
         "password": password
     }
 
     if verbose:
         setup(logging.INFO)
 
-    if not all((hostname, username, password)):
+    if not password:
         logger.warn("""
         Authentication has not be configred. 
-        Add hostname, username, and password to the environment.
+        Add sql password to the environment.
             Example:
-                NOTE_HOSTNAME = localhost
-                NOTE_USERNAME = root
                 NOTE_PASSWORD = password1 
         """)
 
