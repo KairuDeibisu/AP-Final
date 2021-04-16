@@ -6,3 +6,4 @@ config.json
 .vscode
 *.log
 *.egg*
+*.db

@@ -9,6 +9,7 @@ setup(
         "python-dotenv",
         "Sphinx",
         "sphinx-rtd-theme",
+        "sqlalchemy"
     ],
     entry_points="""
         [console_scripts]
