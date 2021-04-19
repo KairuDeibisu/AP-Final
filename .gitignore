@@ -6,3 +6,5 @@ config.json
 .vscode
 *.log
 *.egg*
+*.aux
+*.gz

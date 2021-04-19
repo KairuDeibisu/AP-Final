@@ -1,0 +1,221 @@
+\documentclass[12pt]{report}
+\title{Written Response Submission}
+\date{April 2021}
+
+\usepackage{listings}
+\usepackage{color}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\begin{document}
+\section{Written Responses}
+\subsection{Program Purpose and Devopment}
+
+\section{2a.}
+
+
+The purpose of the Program is to allow Users to create notes on the command line. 
+Every time a user decides to take a note they must decide where to save it and what to call it. 
+The goal is to reduce the obstacles stopping a note taker.
+
+\paragraph{ii.}
+The video demonstrates the creation of a note, searching for notes, and deleting a note.
+
+\paragraph{iii.}
+
+The inputs are the arguments passed to the Program from the command line.
+
+\begin{center}
+	\textit{Note manage create -m “The best program idea ever!” -t “program idea” -t programming}
+\end{center}
+
+The above command creates a note with a message, “The best program idea ever!” and two tags, “program idea” and programming. The output displays the created note.
+\begin{center}
+	\textit{Note search tag -t programming -t “program idea” --limit 100}
+\end{center}
+
+The above command lists up to 100 notes with the following tags, “program idea” and programming. The output is a list of notes.
+
+\section{3b.}
+\paragraph{i.}
+
+\begin{lstlisting}
+   @abstractmethod
+   def _init_database(self):
+       """
+       Create notes database.
+       """
+       pass
+\end{lstlisting}
+
+\paragraph{ii.}
+\begin{lstlisting}
+   @abstractmethod
+   def select_note(self) -> List[Note]:
+       """
+       Select notes from the database.
+       """
+       pass
+\end{lstlisting}
+
+\paragraph{iii.}
+The name of the collection is SQLite.
+
+\paragraph{iv.}
+
+\begin{center}
+ \begin{tabular}{||c c c c||} 
+ \hline
+ id & content & date & active\\ [0.5ex] 
+ \hline\hline
+ 1 & Best Program idea ever! & 15/4/2021 & True \\ 
+ \hline
+ 2 & Hello, World! & 15/4/2021 & True \\ 
+ \hline
+ 3 & I need to get and sd card. & 15/4/2021 & True \\ 
+ \hline
+ 4 & Work on homework tonight. & 15/4/2021 & False \\ 
+ \hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+ \begin{tabular}{||c c||} 
+ \hline
+ fk\_note\_id & name \\ [0.5ex] 
+ \hline\hline
+ 1 & programming \\ 
+ \hline
+ 2 & test \\ 
+ \hline
+ 1 & program-idea \\ 
+ \hline
+ 4 & school \\ 
+ \hline
+\end{tabular}
+\end{center}
+
+The note table has 4 columns. The id column is the unique identifier for each entry or note in the database. 
+The content column is a binary blob with the content or message of a note. The date column is the date the note was created. 
+The active column is a boolean that represents the removal of a note.
+
+The tag table has 2 columns. 
+The fk\_note\_id and name make up the unique identifier for each tag. 
+The fk\_note\_id column is a foreign key with the id of a note. The name column is the tag.
+
+\paragraph{V.}
+As the amount of data increases the difficulty of handling all the data spikes with simple structures like arrays or lists. 
+A RDBMS abstracts the complexity away. I could have used JSON or manage physical files. It’s not easy editing existing JSON. 
+Physical files are slow. Defeating the purpose of the Program.
+
+\section{3c.}
+\paragraph{i.}
+The first program code segment.
+\begin{lstlisting}
+def get_message_from_editor(selected_editor: str) -> str:
+   """
+   Launch editor and get a note message.
+   """
+ 
+   logger.info(f"Starting {selected_editor}")
+ 
+   for editor in Editor.editors:
+       if editor == selected_editor:
+ 
+           process = subprocess.run(" ".join(editor.args), shell=True)
+ 
+           if process.returncode:
+               raise Exception(f"{editor} not installed!")
+ 
+           return _read_message()
+ 
+   raise NotImplementedError(f"editor: {selected_editor} not implemented.")
+\end{lstlisting}
+\paragraph{ii.}
+
+The seconed program code segment. This code snipet calls the first.
+\begin{lstlisting}
+@app.command()
+def create(
+       message: Optional[str] = typer.Option(
+           None, "-m", "--message", show_default=False, help="Message to add to the database."),
+       tags: Optional[List[str]] = typer.Option(
+           None, "-t", "--tags", show_default=False, help="Tags to organize message.", callback=_format_tags_callback),
+       editor: EditorChoice = typer.Option(
+           "vim", show_choices=True, help="Supported editors.")):
+   """
+   Insert note into the database.
+   """
+ 
+   message = message if message else get_message_from_editor(editor)
+ 
+   logger.info(f"Note message: \n{message}")
+   logger.info(f"Note tags: {tags}")
+\end{lstlisting}
+
+\paragraph{iii.}
+The procedure launches one of two command line editors, where the user can write their message. Then returns the message.
+
+\paragraph{iv.}
+ The procedure is as follows.
+\begin{itemize}
+\item Log the currently selected editor.
+\item Iterate through the list of valid editors.
+\item Check if the editor matches the selected editor.
+	\begin{itemize}
+		\item Launch the editor in the shell.
+		\item If editor is not installed raise an exception
+		\item Return the message written in the editor.
+	\end{itemize}
+\item Raise an exception If no match is found within the valid editors.
+\end{itemize}
+
+\section{3d.}
+\paragraph{i.}
+The first call.
+\begin{lstlisting}
+message = get_message_from_editor("vim")
+print(message)
+\end{lstlisting}
+The seconed call. 
+\begin{lstlisting}
+message = get_message_from_editor("fakeeditor")
+print(message)
+\end{lstlisting}
+
+\paragraph{ii.}
+The first call works as intended. It will launch vim, a supported editor. 
+Then return everything that was typed. The procedure finds a valid editor, the editor was installed. So it returns the message typed in the editor as a string. 
+
+The second call, calls an unsupported editor. It raises an error letting the user know that they will need to select a different editor. 
+The procedure could not find a valid editor and raised an exception.
+
+\paragraph{iii.}
+The following are the results of the procedure.
+
+The result of the first call is a string message prented on the console.
+
+The result of the seconed call is an error. 
+\begin{center}
+\textit{NotImplementedError: editor: fakeeditor not implemented.}
+\end{center}
+
+\end{document}
