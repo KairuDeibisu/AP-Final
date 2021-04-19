@@ -12,63 +12,51 @@ from sqlalchemy import MetaData, BLOB, INTEGER, DATE, BOOLEAN, Table, Column, en
 from sqlalchemy import create_engine
 
 
-class INoteDatabase(metaclass=abc.ABCMeta):
-    """
-    Database operations specific to the Notes database.
-    """
 
-    def __init__(
-            self,
-            password: str = None):
-        """
-        Connect to database.
-        """
+class Database:
 
-        self.password = password if password else CONFIGRATION.get("password")
+    _instance = None
 
-    @abstractmethod
-    def insert_note(self) -> int:
-        """
-        Insert note into database.
-        """
-        pass
 
-    @abstractmethod
-    def remove_note(self) -> None:
-        """
-        Deactivate note from database. 
-        """
-        pass
+    def __init__(self):
+        
+        self._init_database
 
-    @abstractmethod
-    def delete_note(self) -> None:
-        """
-        Drop note from the database.
-        """
-        pass
-
-    @abstractmethod
-    def select_note(self) -> List[Note]:
-        """
-        Select notes from the database.
-        """
-        pass
-
-    @abstractmethod
+    
     def _init_database(self):
+
+        metadata = MetaData()
+
+        self.user_table = Table(
+            "note",
+            metadata,
+            Column("id", INTEGER, primary_key=True, autoincrement=True),
+            Column("content", BLOB, nullable=False),
+            Column("date", DATE, default=datetime.now()),
+            Column("active", BOOLEAN, default=True, nullable=False)
+        )
+
+        engine = create_engine("sqlite:///notes.db")
+
+        with engine.begin() as conn:
+            metadata.create_all(conn)
+
+    def __new__(cls, *args,**kwargs):
         """
-        Create notes database.
+        Implement database singleton
         """
-        pass
 
+        if not cls._instance:
+            cls._instance = super(Database, cls).__new__(cls, *args, **kwargs)
 
-class NoteDatabase(INoteDatabase):
+        return cls._instance
 
-    def __init__(self, password: str = None):
-        super().__init__(password=password)
+class NoteDatabase:
 
-        self._init_database()
+    def __init__(self, database:Database):
+        self.db = database()
 
+    
     def select_note(self) -> List[Note]:
         """
         Select notes from database.
@@ -92,21 +80,3 @@ class NoteDatabase(INoteDatabase):
         Insert note into database.
         """
         pass
-
-    def _init_database(self):
-
-        metadata = MetaData()
-
-        self.user_table = Table(
-            "note",
-            metadata,
-            Column("id", INTEGER, primary_key=True, autoincrement=True),
-            Column("content", BLOB, nullable=False),
-            Column("date", DATE, default=datetime.now()),
-            Column("active", BOOLEAN, default=True, nullable=False)
-        )
-
-        engine = create_engine("sqlite:///notes.db")
-
-        with engine.begin() as conn:
-            metadata.create_all(conn)
