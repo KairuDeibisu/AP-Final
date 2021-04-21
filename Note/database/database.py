@@ -1,45 +1,59 @@
 
 
+import re
+import sqlalchemy
+
+from sqlalchemy.sql.schema import ForeignKey
+from sqlalchemy.sql.sqltypes import VARCHAR
 from Note.cli import CONFIGRATION
 from Note.database.table import Note, Tag
 
 from datetime import datetime
 from abc import abstractmethod, abstractclassmethod, abstractproperty, abstractstaticmethod
-from typing import Optional, List
+from typing import Optional, List, Any
 import abc
 
-from sqlalchemy import MetaData, BLOB, INTEGER, DATE, BOOLEAN, Table, Column, engine
+from sqlalchemy import MetaData, BLOB, Table, Column, engine, ForeignKeyConstraint, String, Boolean, Date, Integer, select, desc
 from sqlalchemy import create_engine
 
 
 
 class Database:
 
-    _instance = None
-
-
-    def __init__(self):
-        
-        self._init_database
-
+    db_path = "notes.db"
+    metadata = MetaData()
     
-    def _init_database(self):
-
-        metadata = MetaData()
-
-        self.user_table = Table(
+    user_table = Table(
             "note",
             metadata,
-            Column("id", INTEGER, primary_key=True, autoincrement=True),
+            Column("id", Integer(), primary_key=True, autoincrement=True),
             Column("content", BLOB, nullable=False),
-            Column("date", DATE, default=datetime.now()),
-            Column("active", BOOLEAN, default=True, nullable=False)
-        )
+            Column("date", Date(), default=datetime.now()),
+            Column("active", Boolean(), default=True, nullable=False),
+    )
 
-        engine = create_engine("sqlite:///notes.db")
+    tag_table = tag_table = Table(
+            "tag",
+            metadata,
+            Column("fk_note_id", Integer(), ForeignKey(user_table.c.id), primary_key=True),
+            Column("name", String(255), primary_key=True)
+    )
+    
+    _instance = None
 
-        with engine.begin() as conn:
-            metadata.create_all(conn)
+    def __init__(self):
+
+        self._init_database()
+
+    def _init_database(self):
+        """
+        Build the database tables.
+        """
+
+        self.engine = create_engine(f"sqlite:///{Database.db_path}")
+
+        with self.engine.begin() as conn:
+            Database.metadata.create_all(conn)
 
     def __new__(cls, *args,**kwargs):
         """
@@ -51,11 +65,12 @@ class Database:
 
         return cls._instance
 
+
 class NoteDatabase:
 
     def __init__(self, database:Database):
+        
         self.db = database()
-
     
     def select_note(self) -> List[Note]:
         """
@@ -75,8 +90,22 @@ class NoteDatabase:
         """
         pass
 
-    def insert_note(self) -> int:
+    def insert_note(self, note: dict) -> int:
         """
         Insert note into database.
         """
-        pass
+        
+        insert_stmt = self.db.user_table.insert().values(
+            {"content": note.get("content").encode("utf-8")}
+        )
+
+        select_stmt = select(
+            [self.db.user_table.c.id], 
+            order_by=desc(self.db.user_table.c.id))
+        
+        with self.db.engine.begin() as conn:
+            conn.execute(insert_stmt)
+            result = conn.execute(select_stmt)
+            return result.fetchone()
+            
+        
