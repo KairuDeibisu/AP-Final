@@ -1,6 +1,5 @@
 
 from Note import __version__ as note_version
-from Note.utils.strings import StringBuilder
 
 import logging
 import os

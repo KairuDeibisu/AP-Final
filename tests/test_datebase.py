@@ -3,7 +3,7 @@
 from Note.database.database import NoteDatabase
 from Note.database.database import Database
 
-from Note.database.table import Note
+from Note.database.table import Note, Tag
 
 import unittest
 
@@ -17,7 +17,7 @@ class TestDatabase(unittest.TestCase):
 
     def test_singleton(self):
         """
-        The database only has one instance
+        The database only has one instance.
         """
 
         self.assertIsNone(Database._instance)
@@ -47,6 +47,25 @@ class TestNoteDatabase(unittest.TestCase):
         db = NoteDatabase(Database)
 
         self.assertIsInstance(db, NoteDatabase)
+    
+    def test_common_element_in_lists(self):
+        """
+        Can find the commen element of n number of lists.
+        """
+        lists = [
+            [2,3,4,5],
+            [1,3,4,5],
+            [1,2,4,5]
+        ]
+
+        db = NoteDatabase(Database)
+
+        self.assertFalse(db._common_element_in_lists(lists, 1))
+        self.assertFalse(db._common_element_in_lists(lists, 2))
+        self.assertFalse(db._common_element_in_lists(lists, 3))
+
+        self.assertTrue(db._common_element_in_lists(lists, 4))
+        self.assertTrue(db._common_element_in_lists(lists, 5))
 
     def test_insert_note(self):
         """
@@ -64,14 +83,6 @@ class TestNoteDatabase(unittest.TestCase):
             Note(content=fake.text(10).encode("utf-8"), active=False),
             Note(content=fake.text(10).encode("utf-8"), date_=date_),
             Note(content=fake.text(10).encode("utf-8"), date_=date_),
-            Note(content=fake.text(10).encode("utf-8"), tags="test"),
-            Note(content=fake.text(10).encode("utf-8"), tags="test"),
-            Note(content=fake.text(10).encode("utf-8"), tags="dev"),
-            Note(content=fake.text(10).encode("utf-8"), tags="dev"),
-            Note(content=fake.text(10).encode("utf-8"), tags="test,dev"),
-            Note(content=fake.text(10).encode("utf-8"), tags="test,dev"),
-            Note(content=fake.text(10).encode("utf-8"), tags="dev,test"),
-            Note(content=fake.text(10).encode("utf-8"), tags="dev,test"),
         ]
 
         for note in notes:
@@ -101,7 +112,7 @@ class TestNoteDatabase(unittest.TestCase):
 
     def test_delete_note(self):
         """
-        Make sure note can be from database.
+        Make sure note can be deleted from database.
         """
 
         fake = Faker()
@@ -119,6 +130,9 @@ class TestNoteDatabase(unittest.TestCase):
         self.assertFalse(note)
 
     def test_remove_note(self):
+        """
+         Make sure note can be removed from database.
+        """
 
         fake = Faker()
 
@@ -136,65 +150,60 @@ class TestNoteDatabase(unittest.TestCase):
 
         self.assertIsNotNone(note)
         self.assertFalse(note.active)
+        
 
     def test_select_note_by_tag(self):
-
-        tag_set_one = ["test"]
-        tag_set_two = ["dev"]
-        tag_set_three = ["test", "dev"]
-        tag_set_four = ["dev", "test"]
-        tag_set_five = ["test", "dev", "cat", "bat", "rat"]
+        """
+        Can select note by tags.
+        """
 
         fake = Faker()
 
-        notes = [
-            Note(content=fake.text(10).encode("utf-8"), tags="test"),
-            Note(content=fake.text(10).encode("utf-8"), tags="test"),
-            Note(content=fake.text(10).encode("utf-8"), tags="dev"),
-            Note(content=fake.text(10).encode("utf-8"), tags="dev"),
-            Note(content=fake.text(10).encode("utf-8"), tags="test,dev"),
-            Note(content=fake.text(10).encode("utf-8"), tags="test,dev"),
-            Note(content=fake.text(10).encode("utf-8"), tags="dev,test"),
-            Note(content=fake.text(10).encode("utf-8"), tags="dev,test"),
+        notes_to_insert = [
+            Note(content=fake.text(10).encode("utf-8")),
+            Note(content=fake.text(10).encode("utf-8")),
+            Note(content=fake.text(10).encode("utf-8")),
+            Note(content=fake.text(10).encode("utf-8")),
+        ]
+
+        tags_to_insert = [
+            ["test"],
+            ["dev"],
+            ["test", "dev"],
+            ["dev", "test"]
         ]
 
         db = NoteDatabase(Database)
 
-        for note in notes:
+        for note in notes_to_insert:
             db.insert_note(note)
+        
+        inserted_notes = [db.select_note(db.last_row_id - i) for i in range(len(notes_to_insert))]        
+        inserted_notes.reverse()
 
-        matches = db.select_note_by_tags(tag_set_one)
-        for match in matches:
+        for i,note in enumerate(inserted_notes):
+            tags = [Tag(fk_note_id=note.id_,name=tag) for tag in tags_to_insert[i]]
+            db.insert_tag(tags)
+        
+        matches = db.select_note_by_tags(["test"])
+        matches = [note.id_ for note in matches]
+        self.assertIn(inserted_notes[0].id_, matches)
+        self.assertIn(inserted_notes[2].id_, matches)
+        self.assertIn(inserted_notes[3].id_, matches)
 
-            matched_tags = set(match.tags.strip().split(","))
+        matches = db.select_note_by_tags(["dev"])
+        matches = [note.id_ for note in matches]
+        self.assertIn(inserted_notes[1].id_, matches)
+        self.assertIn(inserted_notes[2].id_, matches)
+        self.assertIn(inserted_notes[3].id_, matches)
 
-            self.assertTrue(tag_set_one[0] in matched_tags)
-
-        matches = db.select_note_by_tags(tag_set_two)
-        for match in matches:
-
-            matched_tags = set(match.tags.strip().split(","))
-
-            self.assertTrue(str(tag_set_two[0]) in set(matched_tags))
-
-        matches = db.select_note_by_tags(tag_set_three)
-        for match in matches:
-
-            matched_tags = set(match.tags.strip().split(","))
-
-            self.assertTrue(set(tag_set_three) in set(matched_tags))
-
-        matches = db.select_note_by_tags(tag_set_four)
-        for match in matches:
-
-            matched_tags = set(match.tags.strip().split(","))
-
-            self.assertTrue(set(tag_set_four) in set(matched_tags))
+        matches = db.select_note_by_tags(["test","dev"])
+        matches = [note.id_ for note in matches]
+        self.assertNotIn(inserted_notes[0].id_, matches)
+        self.assertNotIn(inserted_notes[1].id_, matches)
+        self.assertIn(inserted_notes[2].id_, matches)
+        self.assertIn(inserted_notes[3].id_, matches)
 
         matches = db.select_note_by_tags([])
-
         self.assertFalse(matches)
-
-        matches = db.select_note_by_tags(tag_set_five)
-
-        self.assertFalse(matches)
+            

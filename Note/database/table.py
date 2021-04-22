@@ -19,6 +19,16 @@ class Note(Base):
     __tablename__ = "note"
     id_ = Column("id", Integer(), primary_key=True, autoincrement=True)
     content = Column("content", BLOB, nullable=False)
-    tags = Column("tags", String(255), nullable=True)
     date_ = Column("date", Date(), default=datetime.now(), nullable=True)
     active = Column("active", Boolean(), default=True, nullable=False)
+
+    fk_note_id = relationship("Tag", order_by="Tag.fk_note_id", cascade="all, delete-orphan")
+
+class Tag(Base):
+    """
+    Represents the tag table in the database.
+    """
+    
+    __tablename__ = "tag"
+    fk_note_id = Column("fk_note_id", Integer(), ForeignKey(Note.id_), primary_key=True)
+    name = Column("name", String(255), primary_key=True)

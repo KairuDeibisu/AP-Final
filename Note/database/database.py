@@ -1,17 +1,20 @@
 
 
-from re import match
-import re
+
 from Note.cli import CONFIGRATION
-from Note.database.table import Note, Base
+from Note.database.table import Note, Base, Tag
+from Note.utils.algorithm import divide_and_conquer
+from Note import logging_setup
 
 from datetime import datetime
 from typing import Iterable, Optional, List, final
+import logging
 
 from sqlalchemy import create_engine, engine
 from sqlalchemy.orm import session, sessionmaker
 from sqlalchemy.engine.base import Engine
 
+logger = logging.getLogger(__name__)
 
 class Database:
 
@@ -86,11 +89,13 @@ class NoteDatabase:
         Select notes from the database.
         """
 
+        logger.info("Selecting note from database.")
+
         session = self.db.Session()
 
-        match = session.query(Note).filter(Note.id_ == id_).first()
+        matched = session.query(Note).filter(Note.id_ == id_).first()
 
-        return match
+        return matched
 
     def delete_note(self, id_: int) -> None:
         """
@@ -99,9 +104,9 @@ class NoteDatabase:
 
         session = self.db.Session()
 
-        match = session.query(Note).filter(Note.id_ == id_).first()
+        matched = session.query(Note).filter(Note.id_ == id_).first()
 
-        session.delete(match)
+        session.delete(matched)
 
         session.commit()
 
@@ -112,13 +117,13 @@ class NoteDatabase:
 
         session = self.db.Session()
 
-        match = session.query(Note).filter(Note.id_ == id_).first()
+        matched = session.query(Note).filter(Note.id_ == id_).first()
 
-        match.active = False
+        matched.active = False
 
         session.commit()
 
-    def insert_note(self, note: dict):
+    def insert_note(self, note: Note):
         """
         Insert note into the database.
         """
@@ -131,33 +136,92 @@ class NoteDatabase:
 
         self.last_row_id = session
 
-    def select_note_by_tags(self, tags: List[str]):
+    def select_note_by_tags(self, tags: List[str]) -> Iterable[Note]:
         """
-        Select note by tags
+        Get a list of notes that match the given tags.
+        """
+
+        logger.info("Selecting note's using the following tags: %s" % (tags))
+
+        session = self.db.Session()
+
+        tag_matrix = []
+        list_to_match = []
+
+        for tag in tags:
+            matched_id_list = [match[0] for match in list(self.select_tag_id(tag))]
+            tag_matrix.append(matched_id_list)
+            list_to_match += matched_id_list
+
+         
+        list_to_match = set(list_to_match)
+        
+        logger.debug("List to match: %s" % (list_to_match))
+
+        matches = [id_ for id_ in list_to_match if self._common_element_in_lists(tag_matrix, id_)]
+        
+        logger.debug("Matched in list: %s" % (matches))
+
+        matched = session.query(Note).filter(Note.id_.in_(matches)).all()
+        
+        return matched
+    
+
+    def insert_tag(self, tags: List[Tag]) -> None:
+        """
+        Insert tag into the database
         """
 
         session = self.db.Session()
 
-        matches = session.query(Note).all()
+        session.add_all(tags)
 
-        final_matches = []
+        session.commit()
 
-        for match in matches:
+    def select_tag(self, tag) -> List[Tag]:
+        """
+        Get a list of tags that match the given tag.
+        """
 
-            if match.tags == None:
-                continue
+        session = self.db.Session()
 
-            matched_tags = set(match.tags.strip().split(","))
+        matched = session.query(Tag).filter(Tag.name == tag).order_by(Tag.fk_note_id.asc()).all()
 
-            if len(set(tags)) == 1 and tags[0] in set(matched_tags):
-                final_matches.append(match)
+        logger.debug("Matched IDs: %s" % (matched))
 
-            elif set(tags) in set(matched_tags):
-                final_matches.append(match)
+        return matched
+    
+    def select_tag_id(self, tag: str) -> List[int]:
+        """
+        
+        Get a list of IDs that match the given tag.
+        """
 
-        return final_matches
+        logger.info("Geting all note IDs with given tag: %s" % (tag))
+
+        session = self.db.Session()
+
+        matched = session.query(Tag.fk_note_id).filter(Tag.name == tag).order_by(Tag.fk_note_id.asc()).all()
+
+        logger.debug("Matched IDs: %s" % (matched))
+
+        return matched
+    
+    def _common_element_in_lists(self, matrix: List[List[int]], key: int) -> bool:
+        """
+        Checks if given element is a comment element in all given lists.
+        """
+        
+        for list_ in matrix:
+            if not divide_and_conquer(list_, key):
+                return False
+
+        return True 
 
     def _set_last_row_id(self):
+        """
+        Set the last row id.
+        """
 
         session = self.db.Session()
 
