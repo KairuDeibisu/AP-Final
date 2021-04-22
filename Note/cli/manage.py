@@ -1,9 +1,11 @@
 
 
 from Note.cli.validators import _format_tags_callback
+from Note.database.database import NoteDatabase, Database
+from Note.database.table import Note as NoteTable
+import Note.logging_setup
 
 import os
-import sys
 import tempfile
 import subprocess
 import logging
@@ -13,8 +15,6 @@ from typing import List, Optional, Iterable, Tuple
 from dataclasses import dataclass
 
 import typer
-
-import Note.logging_setup
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +60,14 @@ def create(
 
     logger.info(f"Note message: \n{message}")
     logger.info(f"Note tags: {tags}")
+
+    db = NoteDatabase(Database)
+
+    db.insert_note(NoteTable(content=message.encode("utf-8")))
+
+    note = db.select_note(db.last_row_id)
+
+    db.insert_tag(note.id_, tags)
 
 
 @app.command()

@@ -20,8 +20,6 @@ class TestDatabase(unittest.TestCase):
         The database only has one instance.
         """
 
-        self.assertIsNone(Database._instance)
-
         db_instace_1 = Database()
 
         db_instace_1_obj = id(db_instace_1)
@@ -182,8 +180,7 @@ class TestNoteDatabase(unittest.TestCase):
         inserted_notes.reverse()
 
         for i,note in enumerate(inserted_notes):
-            tags = [Tag(fk_note_id=note.id_,name=tag) for tag in tags_to_insert[i]]
-            db.insert_tag(tags)
+            db.insert_tag(note.id_, tags_to_insert[i])
         
         matches = db.select_note_by_tags(["test"])
         matches = [note.id_ for note in matches]

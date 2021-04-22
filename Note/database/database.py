@@ -167,14 +167,16 @@ class NoteDatabase:
         return matched
     
 
-    def insert_tag(self, tags: List[Tag]) -> None:
+    def insert_tag(self, id_:int, tags: List[str]) -> None:
         """
         Insert tag into the database
         """
 
+        tags_to_insert = [Tag(fk_note_id=id_, name=tag) for tag in tags]
+
         session = self.db.Session()
 
-        session.add_all(tags)
+        session.add_all(tags_to_insert)
 
         session.commit()
 

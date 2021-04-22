@@ -1,5 +1,4 @@
 
-from Note.utils.strings import StringBuilder
 from Note.cli.validators import _format_tags_callback
 
 from typing import Optional, List
