@@ -1,5 +1,6 @@
 
 from Note.cli.validators import _format_tags_callback
+from Note.database.database import Database, NoteDatabase
 
 from typing import Optional, List
 import logging
@@ -12,38 +13,51 @@ app = typer.Typer(name="search", help="Search the database.")
 
 
 @app.command(name="list")
-class Search:
+def list_with_limit(limit: int = typer.Option(5, help="Limit Results.")):
     """
-    Display Notes.
+    List notes
     """
+    
+    logger.info(f"limit: {limit}")
+    db = NoteDatabase(Database)
 
-    def __init__(
-        self,
-        limit: int = typer.Option(
-            5, help="Limit Results.")):
+    results = db.select_note(limit)
 
-        self.limit = limit
+    if not results:
+        error_message = typer.style("Can't find any results!", fg=typer.colors.YELLOW)
+        typer.echo()
+        typer.echo(error_message)
+        typer.echo()
+        typer.Exit(1)
 
-        logger.info(f"limit: {self.limit}")
-
-
+    for result in results:
+        result.display()
+        
 @app.command(name="tag")
-class TagSearch(Search):
+def list_with_limit(
+    tags: List[str] = typer.Option(
+            ..., "-t", "--tags", show_default=False, help="Tags to organize message.", callback=_format_tags_callback),
+    limit: int = typer.Option(5, help="Limit Results.")):
     """
-    Search by tags.
+    List notes
     """
+    
+    logger.info(f"limit: {limit}")
+    logger.info(f"Tags: {tags}")
+    db = NoteDatabase(Database)
 
-    def __init__(
-        self,
-        tags: List[str] = typer.Argument(
-            ..., callback=_format_tags_callback),
-        limit: int = typer.Option(
-            5, help="Limit Results.")):
-        super().__init__(limit)
+    results = db.select_note_by_tags(tags, limit)
 
-        self.tags = tags
+    if not results:
+        error_message = typer.style("Can't find any results!", fg=typer.colors.YELLOW)
+        typer.echo()
+        typer.echo(error_message)
+        typer.echo()
+        typer.Exit(1)
 
-        logger.info(f"Tags: {self.tags}")
+    for result in results:
+        result.display()
+
 
 
 @app.command(name="id")
@@ -55,3 +69,16 @@ def search_by_id(
     """
 
     logger.info(f"ID: {id_}")
+
+    db = NoteDatabase(Database)
+
+    note = db.select_note_by_id(id_)
+
+    try:
+        note.display()
+    except AttributeError:
+        error_message = typer.style("ID %s could not be found!" % (id_), fg=typer.colors.YELLOW)
+        typer.echo()
+        typer.echo(error_message)
+        typer.echo()
+    

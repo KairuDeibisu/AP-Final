@@ -84,7 +84,7 @@ class NoteDatabase:
         self.db = database()
         self._last_row_id = None
 
-    def select_note(self, id_: int) -> Note:
+    def select_note_by_id(self, id_: int) -> Note:
         """
         Select notes from the database.
         """
@@ -95,6 +95,18 @@ class NoteDatabase:
 
         matched = session.query(Note).filter(Note.id_ == id_).first()
 
+        return matched
+
+    def select_note(self, limit:int=None):
+
+        logger.info("Selecting all notes")
+
+        session = session = self.db.Session()
+
+        matched = session.query(Note).order_by(Note.date_.asc()).limit(limit).all()
+
+        logger.debug("Found: %s" % (matched))
+        
         return matched
 
     def delete_note(self, id_: int) -> None:
@@ -136,7 +148,7 @@ class NoteDatabase:
 
         self.last_row_id = session
 
-    def select_note_by_tags(self, tags: List[str]) -> Iterable[Note]:
+    def select_note_by_tags(self, tags: List[str], limit=None) -> Iterable[Note]:
         """
         Get a list of notes that match the given tags.
         """
@@ -162,7 +174,7 @@ class NoteDatabase:
         
         logger.debug("Matched in list: %s" % (matches))
 
-        matched = session.query(Note).filter(Note.id_.in_(matches)).all()
+        matched = session.query(Note).filter(Note.id_.in_(matches)).limit(limit).all()
         
         return matched
     

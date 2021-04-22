@@ -26,3 +26,5 @@ class Testalgorithm(unittest.TestCase):
         self.assertEqual(divide_and_conquer(list_, 11), None)
         self.assertEqual(divide_and_conquer(list_, 1), 1)
 
+        list_ = []
+        self.assertIsNone(divide_and_conquer(list_, 5))

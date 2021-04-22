@@ -7,6 +7,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, BLOB, Date, Boolean, String
 
+import typer
 
 Base = declarative_base()
 
@@ -23,6 +24,21 @@ class Note(Base):
     active = Column("active", Boolean(), default=True, nullable=False)
 
     fk_note_id = relationship("Tag", order_by="Tag.fk_note_id", cascade="all, delete-orphan")
+
+
+    def display(self):
+        """
+        Display note onto the console.
+        """
+
+
+        id_output= typer.style("ID:\t %s" % (self.id_), fg=typer.colors.YELLOW)
+        typer.echo(id_output)
+        typer.echo("Date:\t %s" % (self.date_))
+        typer.echo("Active:\t %s" % (self.active))
+        typer.echo()
+        typer.echo("%s" % (self.content.decode("utf-8").strip()))
+        typer.echo()
 
 class Tag(Base):
     """

@@ -3,6 +3,7 @@
 from Note.cli.validators import _format_tags_callback
 from Note.database.database import NoteDatabase, Database
 from Note.database.table import Note as NoteTable
+from Note.cli.search import search_by_id
 import Note.logging_setup
 
 import os
@@ -65,9 +66,13 @@ def create(
 
     db.insert_note(NoteTable(content=message.encode("utf-8")))
 
-    note = db.select_note(db.last_row_id)
+    note = db.select_note_by_id(db.last_row_id)
 
-    db.insert_tag(note.id_, tags)
+    db.insert_tag(note.id_, set(tags))
+
+    search_by_id(db.last_row_id)
+
+
 
 
 @app.command()

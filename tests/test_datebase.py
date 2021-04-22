@@ -90,7 +90,20 @@ class TestNoteDatabase(unittest.TestCase):
 
     def test_select_note(self):
         """
-        Can select note from database.
+        Can lists notes from database.
+        """
+
+        db = NoteDatabase(Database)
+
+        self.assertIsNotNone(db.select_note())
+
+        limit = 10
+        self.assertLessEqual(len((db.select_note(limit))), limit)
+
+
+    def test_select_note_by_id(self):
+        """
+        Can select note from database with id.
         """
         fake = Faker()
 
@@ -100,7 +113,7 @@ class TestNoteDatabase(unittest.TestCase):
 
         db.insert_note(note)
 
-        note = db.select_note(db.last_row_id)
+        note = db.select_note_by_id(db.last_row_id)
 
         self.assertIsInstance(note, Note)
         self.assertIsNotNone(note.id_)
@@ -123,7 +136,7 @@ class TestNoteDatabase(unittest.TestCase):
 
         db.delete_note(db.last_row_id)
 
-        note = db.select_note(db.last_row_id)
+        note = db.select_note_by_id(db.last_row_id)
 
         self.assertFalse(note)
 
@@ -140,17 +153,17 @@ class TestNoteDatabase(unittest.TestCase):
 
         db.insert_note(note)
 
-        note = db.select_note(db.last_row_id)
+        note = db.select_note_by_id(db.last_row_id)
 
         db.remove_note(note.id_)
 
-        note = db.select_note(db.last_row_id)
+        note = db.select_note_by_id(db.last_row_id)
 
         self.assertIsNotNone(note)
         self.assertFalse(note.active)
         
 
-    def test_select_note_by_tag(self):
+    def test_select_note_by_tags(self):
         """
         Can select note by tags.
         """
@@ -176,7 +189,7 @@ class TestNoteDatabase(unittest.TestCase):
         for note in notes_to_insert:
             db.insert_note(note)
         
-        inserted_notes = [db.select_note(db.last_row_id - i) for i in range(len(notes_to_insert))]        
+        inserted_notes = [db.select_note_by_id(db.last_row_id - i) for i in range(len(notes_to_insert))]        
         inserted_notes.reverse()
 
         for i,note in enumerate(inserted_notes):
