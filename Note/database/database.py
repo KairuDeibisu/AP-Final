@@ -1,47 +1,28 @@
 
 
+from re import match
 import re
-import sqlalchemy
-
-from sqlalchemy.sql.schema import ForeignKey
-from sqlalchemy.sql.sqltypes import VARCHAR
 from Note.cli import CONFIGRATION
-from Note.database.table import Note, Tag
+from Note.database.table import Note, Base
 
 from datetime import datetime
-from abc import abstractmethod, abstractclassmethod, abstractproperty, abstractstaticmethod
-from typing import Optional, List, Any
-import abc
+from typing import Iterable, Optional, List, final
 
-from sqlalchemy import MetaData, BLOB, Table, Column, engine, ForeignKeyConstraint, String, Boolean, Date, Integer, select, desc
-from sqlalchemy import create_engine
-
+from sqlalchemy import create_engine, engine
+from sqlalchemy.orm import session, sessionmaker
+from sqlalchemy.engine.base import Engine
 
 
 class Database:
 
-    db_path = "notes.db"
-    metadata = MetaData()
-    
-    user_table = Table(
-            "note",
-            metadata,
-            Column("id", Integer(), primary_key=True, autoincrement=True),
-            Column("content", BLOB, nullable=False),
-            Column("date", Date(), default=datetime.now()),
-            Column("active", Boolean(), default=True, nullable=False),
-    )
+    _db_path = "notes.db"
 
-    tag_table = tag_table = Table(
-            "tag",
-            metadata,
-            Column("fk_note_id", Integer(), ForeignKey(user_table.c.id), primary_key=True),
-            Column("name", String(255), primary_key=True)
-    )
-    
     _instance = None
 
     def __init__(self):
+
+        self._engine = None
+        self._Session = None
 
         self._init_database()
 
@@ -50,12 +31,11 @@ class Database:
         Build the database tables.
         """
 
-        self.engine = create_engine(f"sqlite:///{Database.db_path}")
+        self.engine = self.db_path
 
-        with self.engine.begin() as conn:
-            Database.metadata.create_all(conn)
+        Base.metadata.create_all(self.engine)
 
-    def __new__(cls, *args,**kwargs):
+    def __new__(cls, *args, **kwargs):
         """
         Implement database singleton
         """
@@ -65,47 +45,132 @@ class Database:
 
         return cls._instance
 
+    @property
+    def engine(self):
+        return self._engine
+
+    @engine.setter
+    def engine(self, path):
+        self._engine = create_engine(f"sqlite:///{path}")
+        self.Session = self.engine
+
+    @property
+    def Session(self):
+        return self._Session
+
+    @Session.setter
+    def Session(self, engine: Engine):
+        self._Session = sessionmaker(bind=engine)
+
+    @property
+    def db_path(self):
+        return self._db_path
+
+    @db_path.setter
+    def db_path(self, path):
+
+        self._db_path = path
+
+        self._init_database()
+
 
 class NoteDatabase:
 
-    def __init__(self, database:Database):
-        
+    def __init__(self, database: Database):
+
         self.db = database()
-    
-    def select_note(self) -> List[Note]:
-        """
-        Select notes from database.
-        """
-        pass
+        self._last_row_id = None
 
-    def delete_note(self) -> None:
+    def select_note(self, id_: int) -> Note:
         """
-        Drop note from database.
+        Select notes from the database.
         """
-        pass
 
-    def remove_note(self) -> None:
-        """
-        Deactivate note from database. 
-        """
-        pass
+        session = self.db.Session()
 
-    def insert_note(self, note: dict) -> int:
-        """
-        Insert note into database.
-        """
-        
-        insert_stmt = self.db.user_table.insert().values(
-            {"content": note.get("content").encode("utf-8")}
-        )
+        match = session.query(Note).filter(Note.id_ == id_).first()
 
-        select_stmt = select(
-            [self.db.user_table.c.id], 
-            order_by=desc(self.db.user_table.c.id))
-        
-        with self.db.engine.begin() as conn:
-            conn.execute(insert_stmt)
-            result = conn.execute(select_stmt)
-            return result.fetchone()
-            
-        
+        return match
+
+    def delete_note(self, id_: int) -> None:
+        """
+        Drop note from the database.
+        """
+
+        session = self.db.Session()
+
+        match = session.query(Note).filter(Note.id_ == id_).first()
+
+        session.delete(match)
+
+        session.commit()
+
+    def remove_note(self, id_: int) -> None:
+        """
+        Deactivate note from database.
+        """
+
+        session = self.db.Session()
+
+        match = session.query(Note).filter(Note.id_ == id_).first()
+
+        match.active = False
+
+        session.commit()
+
+    def insert_note(self, note: dict):
+        """
+        Insert note into the database.
+        """
+
+        session = self.db.Session()
+
+        session.add(note)
+
+        session.commit()
+
+        self.last_row_id = session
+
+    def select_note_by_tags(self, tags: List[str]):
+        """
+        Select note by tags
+        """
+
+        session = self.db.Session()
+
+        matches = session.query(Note).all()
+
+        final_matches = []
+
+        for match in matches:
+
+            if match.tags == None:
+                continue
+
+            matched_tags = set(match.tags.strip().split(","))
+
+            if len(set(tags)) == 1 and tags[0] in set(matched_tags):
+                final_matches.append(match)
+
+            elif set(tags) in set(matched_tags):
+                final_matches.append(match)
+
+        return final_matches
+
+    def _set_last_row_id(self):
+
+        session = self.db.Session()
+
+        match = session.query(Note).first()
+        self._last_row_id = match.records.order_by(
+            None).order_by(match.id_.desc()).first()
+
+    @property
+    def last_row_id(self):
+        return self._last_row_id
+
+    @last_row_id.setter
+    def last_row_id(self, session):
+        match = session.query(Note).order_by(
+            None).order_by(Note.id_.desc()).first()
+        self._last_row_id = match.id_

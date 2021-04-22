@@ -2,7 +2,7 @@
     "python.autoComplete.extraPaths": [
         "Note"
     ],
-    "python.pythonPath": "env/bin/python",
+    "python.pythonPath": "env\\Scripts\\python.exe",
     "python.analysis.extraPaths": [
         "Note",
         "tests"

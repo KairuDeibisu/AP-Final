@@ -9,7 +9,8 @@ setup(
         "python-dotenv",
         "Sphinx",
         "sphinx-rtd-theme",
-        "sqlalchemy"
+        "sqlalchemy",
+        "Faker"
     ],
     entry_points="""
         [console_scripts]
