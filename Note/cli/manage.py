@@ -17,6 +17,8 @@ from dataclasses import dataclass
 
 import typer
 
+from Note.cli.utils import display_output
+
 logger = logging.getLogger(__name__)
 
 app = typer.Typer(name="manage", help="Manage the database.")
@@ -78,13 +80,22 @@ def create(
 @app.command()
 def remove(
     id_: int = typer.Argument(
-        ..., metavar="id", help="Note to remove."),
+        ..., metavar="id", help="The id of the note to hide/remove from list."),
     delete: bool = typer.Option(
-        False, show_default=False, confirmation_prompt=True, help="Delete note forever.")):
+        False, show_default=False, confirmation_prompt=True, help="Delete note from list forever.")):
     """
     Remove note from database.
     """
-    pass
+    
+    db = NoteDatabase(Database)
+
+    if delete:
+        db.delete_note(id_)
+    else:
+        db.remove_note(id_)
+        result = db.select_note_by_id(id_)
+
+        display_output([result])
 
 
 def get_message_from_editor(selected_editor: str) -> str:

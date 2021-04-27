@@ -35,7 +35,7 @@ class Note(Base):
         id_output= typer.style("ID:\t %s" % (self.id_), fg=typer.colors.YELLOW)
         typer.echo(id_output)
         typer.echo("Date:\t %s" % (self.date_))
-        typer.echo("Active:\t %s" % (self.active))
+        typer.echo("Hidden:\t %s" % (not self.active))
         typer.echo()
         typer.echo("%s" % (self.content.decode("utf-8").strip()))
         typer.echo()

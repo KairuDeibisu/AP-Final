@@ -97,13 +97,15 @@ class NoteDatabase:
 
         return matched
 
-    def select_note(self, limit:int=None):
+    def select_note(self, limit:int=None, active=True):
 
         logger.info("Selecting all notes")
 
         session = session = self.db.Session()
 
-        matched = session.query(Note).order_by(Note.date_.asc()).limit(limit).all()
+        
+        matched = session.query(Note).filter(Note.active == active).order_by(Note.date_.asc()).limit(limit).all()
+        
 
         logger.debug("Found: %s" % (matched))
         
@@ -148,7 +150,7 @@ class NoteDatabase:
 
         self.last_row_id = session
 
-    def select_note_by_tags(self, tags: List[str], limit=None) -> Iterable[Note]:
+    def select_note_by_tags(self, tags: List[str], active=True, limit=None) -> Iterable[Note]:
         """
         Get a list of notes that match the given tags.
         """
@@ -173,8 +175,8 @@ class NoteDatabase:
         matches = [id_ for id_ in list_to_match if self._common_element_in_lists(tag_matrix, id_)]
         
         logger.debug("Matched in list: %s" % (matches))
-
-        matched = session.query(Note).filter(Note.id_.in_(matches)).limit(limit).all()
+        
+        matched = session.query(Note).filter(Note.id_.in_(matches), Note.active == active).limit(limit).all()
         
         return matched
     
@@ -207,7 +209,6 @@ class NoteDatabase:
     
     def select_tag_id(self, tag: str) -> List[int]:
         """
-        
         Get a list of IDs that match the given tag.
         """
 

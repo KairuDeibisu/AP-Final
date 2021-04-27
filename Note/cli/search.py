@@ -1,6 +1,7 @@
 
 from Note.cli.validators import _format_tags_callback
 from Note.database.database import Database, NoteDatabase
+from Note.cli.utils import display_output
 
 from typing import Optional, List
 import logging
@@ -23,40 +24,26 @@ def list_with_limit(limit: int = typer.Option(5, help="Limit Results.")):
 
     results = db.select_note(limit)
 
-    if not results:
-        error_message = typer.style("Can't find any results!", fg=typer.colors.YELLOW)
-        typer.echo()
-        typer.echo(error_message)
-        typer.echo()
-        typer.Exit(1)
-
-    for result in results:
-        result.display()
+    display_output(results)
         
 @app.command(name="tag")
-def list_with_limit(
+def list_with_limit_and_tag(
     tags: List[str] = typer.Option(
-            ..., "-t", "--tags", show_default=False, help="Tags to organize message.", callback=_format_tags_callback),
-    limit: int = typer.Option(5, help="Limit Results.")):
+            ..., "-t", "--tag", show_default=False, help="A given tag to search.", callback=_format_tags_callback),
+    limit: int = typer.Option(5, help="Limit Results."),
+    active: bool = typer.Option(True, "-h","--hidden", show_default=False,help="List hidden note's only",)):
     """
     List notes
     """
     
     logger.info(f"limit: {limit}")
     logger.info(f"Tags: {tags}")
+    
     db = NoteDatabase(Database)
 
-    results = db.select_note_by_tags(tags, limit)
+    results = db.select_note_by_tags(tags=tags, limit=limit, active=active)
 
-    if not results:
-        error_message = typer.style("Can't find any results!", fg=typer.colors.YELLOW)
-        typer.echo()
-        typer.echo(error_message)
-        typer.echo()
-        typer.Exit(1)
-
-    for result in results:
-        result.display()
+    display_output(results)
 
 
 
@@ -72,10 +59,10 @@ def search_by_id(
 
     db = NoteDatabase(Database)
 
-    note = db.select_note_by_id(id_)
+    result = db.select_note_by_id(id_)
 
     try:
-        note.display()
+        display_output([result])
     except AttributeError:
         error_message = typer.style("ID %s could not be found!" % (id_), fg=typer.colors.YELLOW)
         typer.echo()
