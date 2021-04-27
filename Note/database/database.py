@@ -124,16 +124,17 @@ class NoteDatabase:
 
         session.commit()
 
-    def remove_note(self, id_: int) -> None:
+
+    def set_note_active_value(self, id_: int, value: bool):
         """
-        Deactivate note from database.
+        Activate and Deactivate note from database.
         """
 
         session = self.db.Session()
 
         matched = session.query(Note).filter(Note.id_ == id_).first()
 
-        matched.active = False
+        matched.active = value
 
         session.commit()
 

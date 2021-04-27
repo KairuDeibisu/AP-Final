@@ -1,5 +1,6 @@
 
 
+from sqlalchemy.util.langhelpers import decode_slice
 from Note.cli.validators import _format_tags_callback
 from Note.database.database import NoteDatabase, Database
 from Note.database.table import Note as NoteTable
@@ -92,11 +93,27 @@ def remove(
     if delete:
         db.delete_note(id_)
     else:
-        db.remove_note(id_)
-        result = db.select_note_by_id(id_)
+        db.toggle_note(id_)
+        result = db.select_note_by_id(id_, False)
 
         display_output([result])
 
+@app.command()
+def recover(
+    id_: int = typer.Argument(
+        ..., metavar="id", help="The id of the note to recover."),
+        ):
+    """
+    Restore hidden note.
+    """
+
+    db = NoteDatabase(Database)
+
+    db.set_note_active_value(id_, value=True)
+
+    result = db.select_note_by_id(id_)
+
+    display_output([result])
 
 def get_message_from_editor(selected_editor: str) -> str:
     """

@@ -140,9 +140,9 @@ class TestNoteDatabase(unittest.TestCase):
 
         self.assertFalse(note)
 
-    def test_remove_note(self):
+    def test_set_note_active_value(self):
         """
-         Make sure note can be removed from database.
+        Make sure note can be toggle active or inactive from database.
         """
 
         fake = Faker()
@@ -155,7 +155,7 @@ class TestNoteDatabase(unittest.TestCase):
 
         note = db.select_note_by_id(db.last_row_id)
 
-        db.remove_note(note.id_)
+        db.set_note_active_value(note.id_, False)
 
         note = db.select_note_by_id(db.last_row_id)
 

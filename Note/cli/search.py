@@ -14,7 +14,9 @@ app = typer.Typer(name="search", help="Search the database.")
 
 
 @app.command(name="list")
-def list_with_limit(limit: int = typer.Option(5, help="Limit Results.")):
+def list_with_limit(
+    limit: int = typer.Option(5, help="Limit Results."),
+    active: bool = typer.Option(True, "-h","--hidden", show_default=False,help="List hidden note's only")):
     """
     List notes
     """
@@ -22,7 +24,7 @@ def list_with_limit(limit: int = typer.Option(5, help="Limit Results.")):
     logger.info(f"limit: {limit}")
     db = NoteDatabase(Database)
 
-    results = db.select_note(limit)
+    results = db.select_note(limit, active=active)
 
     display_output(results)
         
@@ -31,9 +33,9 @@ def list_with_limit_and_tag(
     tags: List[str] = typer.Option(
             ..., "-t", "--tag", show_default=False, help="A given tag to search.", callback=_format_tags_callback),
     limit: int = typer.Option(5, help="Limit Results."),
-    active: bool = typer.Option(True, "-h","--hidden", show_default=False,help="List hidden note's only",)):
+    active: bool = typer.Option(True, "-h","--hidden", show_default=False,help="List hidden note's only")):
     """
-    List notes
+    List notes by the given tags.
     """
     
     logger.info(f"limit: {limit}")
