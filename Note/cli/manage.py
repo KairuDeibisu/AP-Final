@@ -11,6 +11,7 @@ from typing import List, Optional, Tuple
 import os
 import tempfile
 import subprocess
+import sys
 
 import typer
 
@@ -21,9 +22,20 @@ FILEPATH = os.path.join(tempfile.gettempdir(), FILENAME)
 
 
 class Editor:
+    """
+    Editor defines command a line text editor. 
+    """
+
     editors = []
 
     def __init__(self, name: str, args: Tuple):
+        """Constructor
+
+        Args:
+            name: the name of the command line editor.
+            args: arguments to pass into the command line editor.
+        """
+
         self.name = name
         self.args = args
         self.editors.append(self)
@@ -36,20 +48,30 @@ class Editor:
 
 
 class EditorChoice(str, Enum):
+    """
+    Define command line editors
+    """
+
     vim = str(Editor("vim", ("vim", "-n", FILEPATH)))
     nano = str(Editor("nano", ("nano", FILEPATH)))
 
 
 @app.command()
-def create(
+def add(
         message: Optional[str] = typer.Option(
             None, "-m", "--message", show_default=False, help="Message to add to the database."),
         tags: Optional[List[str]] = typer.Option(
             None, "-t", "--tags", show_default=False, help="Tags to organize message.", callback=_format_tags_callback),
         editor: EditorChoice = typer.Option(
-            "vim", show_choices=True, help="Supported editors.")):
+            "vim", show_choices=True, help="Write a note in selected editor.")):
     """
-    Insert note into the database.
+    Add note to the database.
+
+    Args:
+        message: A note to add to the database directly.
+        tags: The tags to attach to a note.
+        editor: The selected command line editor to use.
+
     """
 
     message = message if message else get_message_from_editor(editor)
@@ -65,8 +87,6 @@ def create(
     search_by_id(db.last_row_id)
 
 
-
-
 @app.command()
 def remove(
     id_: int = typer.Argument(
@@ -74,11 +94,15 @@ def remove(
     delete: bool = typer.Option(
         False, show_default=False, confirmation_prompt=True, help="Delete note from list forever.")):
     """
-    Hide or Delete note from database.
+    Hide or Delete a note from the database.
+
+    Args:
+        id_: The id of the selected note to hide.
+        delete: A Flag to delete a note out right.
     """
-    
+
     db = NoteDatabase(Database)
-    
+
     if delete:
         db.delete_note(id_)
     else:
@@ -87,13 +111,18 @@ def remove(
 
         display_output([result])
 
+
 @app.command()
 def recover(
     id_: int = typer.Argument(
         ..., metavar="id", help="The id of the note to recover."),
-        ):
+):
     """
-    Restore hidden note.
+    Restore a hidden note in the database.
+
+    Args:
+        id_: The id of the note to restore. Only effect's hidden notes.
+
     """
 
     db = NoteDatabase(Database)
@@ -104,13 +133,22 @@ def recover(
 
     display_output([result])
 
-def get_message_from_editor(selected_editor: str) -> str:
+
+def get_message_from_editor(editor_: str) -> str:
     """
-    Launch editor and get a note message.
+    Launch editor and get message content's.
+
+    Args:
+        editor_: The name of the editor to use.
+
+    Raises:
+        Exception: if editor_ is not installed.
+        NotImplementError: if editor_ usage is not define.
+
     """
 
     for editor in Editor.editors:
-        if editor == selected_editor:
+        if editor == editor_:
 
             process = subprocess.run(" ".join(editor.args), shell=True)
 
@@ -119,7 +157,7 @@ def get_message_from_editor(selected_editor: str) -> str:
 
             return _read_message()
 
-    raise NotImplementedError(f"editor: {selected_editor} not implemented.")
+    raise NotImplementedError(f"editor: {editor_} not implemented.")
 
 
 def _read_message() -> str:
@@ -137,7 +175,7 @@ def _read_message() -> str:
         return data
     except FileNotFoundError:
         typer.echo("Aborting!")
-        typer.Exit(1)
+        sys.exit(1)
     finally:
         _remove_tmp_file()
 

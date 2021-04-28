@@ -6,9 +6,6 @@ setup(
     py_modules=["Note", "tests"],
     install_requires=[
         "typer",
-        "python-dotenv",
-        "Sphinx",
-        "sphinx-rtd-theme",
         "sqlalchemy",
         "Faker"
     ],
@@ -16,4 +13,5 @@ setup(
         [console_scripts]
         Note=Note.cli.__main__:app
     """,
+    python_version="3.9"
 )

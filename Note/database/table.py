@@ -6,7 +6,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, BLOB, Date, Boolean, String
-
 import typer
 
 Base = declarative_base()
@@ -23,16 +22,16 @@ class Note(Base):
     date_ = Column("date", Date(), default=datetime.now(), nullable=True)
     active = Column("active", Boolean(), default=True, nullable=False)
 
-    fk_note_id = relationship("Tag", order_by="Tag.fk_note_id", cascade="all, delete-orphan")
-
+    fk_note_id = relationship(
+        "Tag", order_by="Tag.fk_note_id", cascade="all, delete-orphan")
 
     def display(self):
         """
         Display note onto the console.
         """
 
-
-        id_output= typer.style("ID:\t %s" % (self.id_), fg=typer.colors.YELLOW)
+        id_output = typer.style("ID:\t %s" % (
+            self.id_), fg=typer.colors.YELLOW)
         typer.echo(id_output)
         typer.echo("Date:\t %s" % (self.date_))
         typer.echo("Hidden:\t %s" % (not self.active))
@@ -40,11 +39,13 @@ class Note(Base):
         typer.echo("%s" % (self.content.decode("utf-8").strip()))
         typer.echo()
 
+
 class Tag(Base):
     """
     Represents the tag table in the database.
     """
-    
+
     __tablename__ = "tag"
-    fk_note_id = Column("fk_note_id", Integer(), ForeignKey(Note.id_), primary_key=True)
+    fk_note_id = Column("fk_note_id", Integer(),
+                        ForeignKey(Note.id_), primary_key=True)
     name = Column("name", String(255), primary_key=True)
