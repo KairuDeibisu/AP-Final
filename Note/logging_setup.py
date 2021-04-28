@@ -23,5 +23,4 @@ def setup(logging_level, log_file=None, filemode="a"):
     logger.debug(f"Python: {sys.version}")
     logger.debug(f"Platform: {sys.platform}")
 
-
-setup(logging.DEBUG, "main.log", "w")
+logging.disable(logging.WARN)

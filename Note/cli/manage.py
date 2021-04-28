@@ -1,6 +1,5 @@
 
 
-from sqlalchemy.util.langhelpers import decode_slice
 from Note.cli.validators import _format_tags_callback
 from Note.database.database import NoteDatabase, Database
 from Note.database.table import Note as NoteTable
@@ -81,20 +80,22 @@ def create(
 @app.command()
 def remove(
     id_: int = typer.Argument(
-        ..., metavar="id", help="The id of the note to hide/remove from list."),
+        ..., metavar="id", help="The id of the note to hide/delete from list."),
     delete: bool = typer.Option(
         False, show_default=False, confirmation_prompt=True, help="Delete note from list forever.")):
     """
-    Remove note from database.
+    Hide or Delete note from database.
     """
     
     db = NoteDatabase(Database)
-
+    
     if delete:
+        logger.info("Deleting note with id: %s" % (id_))
         db.delete_note(id_)
     else:
-        db.toggle_note(id_)
-        result = db.select_note_by_id(id_, False)
+        logger.info("Hiding note with id: %s" % (id_))
+        db.set_note_active_value(id_, False)
+        result = db.select_note_by_id(id_,)
 
         display_output([result])
 
