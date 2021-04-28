@@ -10,9 +10,6 @@ import unittest
 from faker import Faker
 
 
-Database._db_path = "test.db"
-
-
 class TestDatabase(unittest.TestCase):
 
     def test_singleton(self):
@@ -45,15 +42,15 @@ class TestNoteDatabase(unittest.TestCase):
         db = NoteDatabase(Database)
 
         self.assertIsInstance(db, NoteDatabase)
-    
+
     def test_common_element_in_lists(self):
         """
         Can find the commen element of n number of lists.
         """
         lists = [
-            [2,3,4,5],
-            [1,3,4,5],
-            [1,2,4,5]
+            [2, 3, 4, 5],
+            [1, 3, 4, 5],
+            [1, 2, 4, 5]
         ]
 
         db = NoteDatabase(Database)
@@ -99,7 +96,6 @@ class TestNoteDatabase(unittest.TestCase):
 
         limit = 10
         self.assertLessEqual(len((db.select_note(limit))), limit)
-
 
     def test_select_note_by_id(self):
         """
@@ -161,7 +157,6 @@ class TestNoteDatabase(unittest.TestCase):
 
         self.assertIsNotNone(note)
         self.assertFalse(note.active)
-        
 
     def test_select_note_by_tags(self):
         """
@@ -188,13 +183,14 @@ class TestNoteDatabase(unittest.TestCase):
 
         for note in notes_to_insert:
             db.insert_note(note)
-        
-        inserted_notes = [db.select_note_by_id(db.last_row_id - i) for i in range(len(notes_to_insert))]        
+
+        inserted_notes = [db.select_note_by_id(
+            db.last_row_id - i) for i in range(len(notes_to_insert))]
         inserted_notes.reverse()
 
-        for i,note in enumerate(inserted_notes):
+        for i, note in enumerate(inserted_notes):
             db.insert_tag(note.id_, tags_to_insert[i])
-        
+
         matches = db.select_note_by_tags(["test"])
         matches = [note.id_ for note in matches]
         self.assertIn(inserted_notes[0].id_, matches)
@@ -207,7 +203,7 @@ class TestNoteDatabase(unittest.TestCase):
         self.assertIn(inserted_notes[2].id_, matches)
         self.assertIn(inserted_notes[3].id_, matches)
 
-        matches = db.select_note_by_tags(["test","dev"])
+        matches = db.select_note_by_tags(["test", "dev"])
         matches = [note.id_ for note in matches]
         self.assertNotIn(inserted_notes[0].id_, matches)
         self.assertNotIn(inserted_notes[1].id_, matches)
@@ -216,4 +212,3 @@ class TestNoteDatabase(unittest.TestCase):
 
         matches = db.select_note_by_tags([])
         self.assertFalse(matches)
-            

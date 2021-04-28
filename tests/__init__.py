@@ -1,3 +1,5 @@
 
 
-DEFAULT_TEST_FILE_PATH = "test.txt"
+from Note.database.database import Database
+
+Database._db_path = "test.db"

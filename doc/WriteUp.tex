@@ -1,0 +1,226 @@
+\documentclass[12pt]{report}
+\title{Written Response Submission}
+\date{April 2021}
+
+\usepackage{listings}
+\usepackage{color}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\begin{document}
+\section{Written Responses}
+\subsection{Program Purpose and Devopment}
+
+\section{2a.}
+
+The programs purpose is to allows users to create notes on the command line. The goal is to reduce the obstacles stopping a note-taker; where to save it, what to call it.
+
+\paragraph{ii.}
+The video demonstrates managing and searching for a note.
+
+\paragraph{iii.}
+
+The user gives input in the form of command line arguments.
+
+\begin{center}
+	\textit{Note manage create -m “Hello, World” -t test -t dev}
+\end{center}
+
+The above command creates a note with a message, "Hello, World" and two tags, “test” and "dev". The output displays the created note on the console.
+\begin{center}
+	\textit{Note search tag -t test}
+\end{center}
+
+The above command searches for notes with the tag, "test”. The output is a list of notes to the console.
+
+\section{3b.}
+\paragraph{i.}
+
+\begin{lstlisting}
+    def insert_note(self, note: Note) -> None:
+        """
+        Insert note into the database.
+
+        Args:
+            note: The note object to insert into the database.
+
+        .. Note:
+            The properly last_row_id is set with the id of the inserted note. 
+
+        """
+
+        session = self.db.Session()
+
+        session.add(note)
+
+        session.commit()
+
+        self.last_row_id = session
+\end{lstlisting}
+
+\paragraph{ii.}
+\begin{lstlisting}
+    @app.command()
+    def add(
+            message: Optional[str] = typer.Option(
+                None, "-m", "--message", show_default=False, help="Message to add to the database."),
+            tags: Optional[List[str]] = typer.Option(
+                None, "-t", "--tags", show_default=False, help="Tags to organize message.", callback=_format_tags_callback),
+            editor: EditorChoice = typer.Option(
+                "vim", show_choices=True, help="Write a note in selected editor.")):
+        """
+        Add note to the database.
+    
+        Args:
+            message: A note to add to the database directly.
+            tags: The tags to attach to a note.
+            editor: The selected command line editor to use.
+    
+        """
+    
+        message = message if message else get_message_from_editor(editor)
+    
+        db = NoteDatabase(Database)
+    
+        db.insert_note(NoteTable(content=message.encode("utf-8")))
+    
+        note = db.select_note_by_id(db.last_row_id)
+    
+        db.insert_tag(note.id_, set(tags))
+    
+        search_by_id(db.last_row_id)
+    
+\end{lstlisting}
+
+\paragraph{iii.}
+The name of the collection is db.
+
+\paragraph{iv.}
+
+\begin{center}
+ \begin{tabular}{||c c c c||} 
+ \hline
+ "id" & content & "date" & active\\ [0.5ex] 
+ \hline\hline
+ 1 & Foo & 15/4/2021 & True \\ 
+ \hline
+ 2 & Fizz & 15/4/2021 & True \\ 
+ \hline
+ 3 & Bar & 15/4/2021 & True \\ 
+ \hline
+ 4 & Bizz & 15/4/2021 & False \\ 
+ \hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+ \begin{tabular}{||c c||} 
+ \hline
+ fk\_note\_id & name \\ [0.5ex] 
+ \hline\hline
+ 1 & programming \\ 
+ \hline
+ 2 & test \\ 
+ \hline
+ 1 & program-idea \\ 
+ \hline
+ 4 & school \\ 
+ \hline
+\end{tabular}
+\end{center}
+
+The note table has 4 columns. The id column is the unique identifier for each entry in the database.
+The tag table has 2 columns. The fk\_note\_id and name make up the unique identifier for each tag.
+
+\paragraph{V.}
+As the amount of data increases the difficulty of handling all the data spikes with simple structures like arrays or lists. A RDBMS abstracts the complexity away. I could have used JSON or manage physical files. It’s not easy editing existing JSON. 
+Physical files defeat the purpose of the Program and are slow.
+
+\section{3c.}
+\paragraph{i.}
+\begin{lstlisting}
+    def divide_and_conquer(array: List[int], key: int) -> int:
+
+        def center_of_array(): return len(array) // 2
+
+        while 1 < len(array):
+
+            if array[center_of_array()] == key:
+                return key
+
+            if array[center_of_array()] > key:
+                array = array[:center_of_array()]
+            else:
+                array = array[center_of_array():]
+
+        if not len(array):
+            return None
+
+        return None if (value := array[center_of_array()]) != key else value
+
+\end{lstlisting}
+\paragraph{ii.}
+
+\begin{lstlisting}
+    @staticmethod
+    def _common_element_in_lists(matrix: List[List[int]], key: int) -> bool:
+
+        for list_ in matrix:
+            if not divide_and_conquer(list_, key):
+                return False
+
+        return True
+
+\end{lstlisting}
+
+\paragraph{iii.}
+The procedure checks a given array for a given value.
+This is used by the calling function to quickly check if a key/note ID is in all the lists in the given matrix.
+
+\paragraph{iv.}
+ The procedure is as follows.
+\begin{itemize}
+\item While 1 is less than the length of the array.
+\item If the value in the middle of the array matches the given key. Return the key.
+\item If the value is grater than the key, slice the array from the center to the end. Otherwise, slice the array from the start to the center.
+\item Once the loop is complete, if the length of the array is 0. Return None.
+\item if the center of the array matches the given key. Return the key. Otherwise, return None.
+\end{itemize}
+
+\section{3d.}
+\paragraph{i.}
+\begin{lstlisting}
+print(divide_and_conquer([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 6))
+\end{lstlisting}
+\begin{lstlisting}
+print(divide_and_conquer([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 11))
+\end{lstlisting}
+
+\paragraph{ii.}
+The first call is checking if 6 is in the list.
+The second call is checking if 11 is in the list.
+
+\paragraph{iii.}
+
+The result of the first call is the 6 printed to the console.
+The result of the seconded call is None printed to the console.
+
+\end{document}
