@@ -1,10 +1,8 @@
 
 from typing import List
-from time import sleep
 
 def divide_and_conquer(array: List[int], key: int) -> int:
 
-    sleep(0.1)
 
     length_of_array = lambda: len(array)
 
