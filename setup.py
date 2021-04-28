@@ -3,11 +3,10 @@ from setuptools import setup
 setup(
     name="Note",
     version="1.0",
-    py_modules=["Note", "tests"],
+    py_modules=["Note"],
     install_requires=[
         "typer",
         "sqlalchemy",
-        "Faker"
     ],
     entry_points="""
         [console_scripts]
