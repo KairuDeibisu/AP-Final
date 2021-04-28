@@ -1,20 +1,13 @@
 
 
-
-from Note.cli import CONFIGRATION
 from Note.database.table import Note, Base, Tag
 from Note.utils.algorithm import divide_and_conquer
-from Note import logging_setup
 
-from datetime import datetime
-from typing import Iterable, Optional, List, final
-import logging
+from typing import Iterable, List
 
-from sqlalchemy import create_engine, engine
-from sqlalchemy.orm import session, sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine.base import Engine
-
-logger = logging.getLogger(__name__)
 
 class Database:
 
@@ -89,7 +82,6 @@ class NoteDatabase:
         Select notes from the database.
         """
 
-        logger.info("Selecting note from database.")
 
         session = self.db.Session()
 
@@ -99,15 +91,11 @@ class NoteDatabase:
 
     def select_note(self, limit:int=None, active=True):
 
-        logger.info("Selecting all notes")
 
         session = session = self.db.Session()
 
         
         matched = session.query(Note).filter(Note.active == active).order_by(Note.date_.asc()).limit(limit).all()
-        
-
-        logger.debug("Found: %s" % (matched))
         
         return matched
 
@@ -156,8 +144,6 @@ class NoteDatabase:
         Get a list of notes that match the given tags.
         """
 
-        logger.info("Selecting note's using the following tags: %s" % (tags))
-
         session = self.db.Session()
 
         tag_matrix = []
@@ -170,12 +156,10 @@ class NoteDatabase:
 
          
         list_to_match = set(list_to_match)
-        
-        logger.debug("List to match: %s" % (list_to_match))
+    
 
         matches = [id_ for id_ in list_to_match if self._common_element_in_lists(tag_matrix, id_)]
-        
-        logger.debug("Matched in list: %s" % (matches))
+    
         
         matched = session.query(Note).filter(Note.id_.in_(matches), Note.active == active).limit(limit).all()
         
@@ -204,8 +188,6 @@ class NoteDatabase:
 
         matched = session.query(Tag).filter(Tag.name == tag).order_by(Tag.fk_note_id.asc()).all()
 
-        logger.debug("Matched IDs: %s" % (matched))
-
         return matched
     
     def select_tag_id(self, tag: str) -> List[int]:
@@ -213,13 +195,11 @@ class NoteDatabase:
         Get a list of IDs that match the given tag.
         """
 
-        logger.info("Geting all note IDs with given tag: %s" % (tag))
 
         session = self.db.Session()
 
         matched = session.query(Tag.fk_note_id).filter(Tag.name == tag).order_by(Tag.fk_note_id.asc()).all()
 
-        logger.debug("Matched IDs: %s" % (matched))
 
         return matched
     

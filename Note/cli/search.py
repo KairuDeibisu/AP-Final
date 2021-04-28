@@ -1,14 +1,12 @@
 
-from Note.cli.validators import _format_tags_callback
-from Note.database.database import Database, NoteDatabase
-from Note.cli.utils import display_output
 
-from typing import Optional, List
-import logging
+from Note.cli.validators import _format_tags_callback
+from Note.cli.utils import display_output
+from Note.database.database import Database, NoteDatabase
+
+from typing import List
 
 import typer
-
-logger = logging.getLogger(__name__)
 
 app = typer.Typer(name="search", help="Search the database.")
 
@@ -20,8 +18,7 @@ def list_with_limit(
     """
     List notes
     """
-    
-    logger.info(f"limit: {limit}")
+
     db = NoteDatabase(Database)
 
     results = db.select_note(limit, active=active)
@@ -38,9 +35,6 @@ def list_with_limit_and_tag(
     List notes by the given tags.
     """
     
-    logger.info(f"limit: {limit}")
-    logger.info(f"Tags: {tags}")
-    
     db = NoteDatabase(Database)
 
     results = db.select_note_by_tags(tags=tags, limit=limit, active=active)
@@ -56,8 +50,6 @@ def search_by_id(
     """
     Search by id.
     """
-
-    logger.info(f"ID: {id_}")
 
     db = NoteDatabase(Database)
 

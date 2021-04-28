@@ -1,25 +1,18 @@
 
 
 from Note.cli.validators import _format_tags_callback
+from Note.cli.search import search_by_id
+from Note.cli.utils import display_output
 from Note.database.database import NoteDatabase, Database
 from Note.database.table import Note as NoteTable
-from Note.cli.search import search_by_id
-import Note.logging_setup
 
+from enum import Enum
+from typing import List, Optional, Tuple
 import os
 import tempfile
 import subprocess
-import logging
-
-from enum import Enum
-from typing import List, Optional, Iterable, Tuple
-from dataclasses import dataclass
 
 import typer
-
-from Note.cli.utils import display_output
-
-logger = logging.getLogger(__name__)
 
 app = typer.Typer(name="manage", help="Manage the database.")
 
@@ -61,9 +54,6 @@ def create(
 
     message = message if message else get_message_from_editor(editor)
 
-    logger.info(f"Note message: \n{message}")
-    logger.info(f"Note tags: {tags}")
-
     db = NoteDatabase(Database)
 
     db.insert_note(NoteTable(content=message.encode("utf-8")))
@@ -90,10 +80,8 @@ def remove(
     db = NoteDatabase(Database)
     
     if delete:
-        logger.info("Deleting note with id: %s" % (id_))
         db.delete_note(id_)
     else:
-        logger.info("Hiding note with id: %s" % (id_))
         db.set_note_active_value(id_, False)
         result = db.select_note_by_id(id_,)
 
@@ -120,8 +108,6 @@ def get_message_from_editor(selected_editor: str) -> str:
     """
     Launch editor and get a note message.
     """
-
-    logger.info(f"Starting {selected_editor}")
 
     for editor in Editor.editors:
         if editor == selected_editor:

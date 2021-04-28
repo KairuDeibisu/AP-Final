@@ -7,5 +7,4 @@
         "Note",
         "tests"
     ],
-    "restructuredtext.confPath": "${workspaceFolder}\\docs",
 }

@@ -1,6 +1,3 @@
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 def _format_tags_callback(tags: str) -> list:
